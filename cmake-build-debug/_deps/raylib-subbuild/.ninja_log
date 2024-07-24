@@ -1,0 +1,21 @@
+# ninja log v5
+1	192	6893404276231275	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-mkdir	5bd8f3c0f35971d8
+7399	7466	6893404348962405	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-build	508626471b54f735
+1	192	6893404276231275	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-mkdir	5bd8f3c0f35971d8
+192	7228	6893404346568841	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-download	6bc487d20840cf83
+7285	7338	6893404347665877	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-patch	552efdc92a84845b
+7285	7338	6893404347665877	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-patch	552efdc92a84845b
+192	7228	6893404346568841	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-download	6bc487d20840cf83
+7229	7285	6893404347167551	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-update	4eec5cc82cc0c891
+7229	7285	6893404347167551	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-update	4eec5cc82cc0c891
+7338	7398	6893404348284208	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-configure	6c26889b0d76fed9
+7338	7398	6893404348284208	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-configure	6c26889b0d76fed9
+7399	7466	6893404348962405	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-build	508626471b54f735
+7524	7583	6893404350122658	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-test	828b184fbb054170
+7466	7524	6893404349544210	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-install	2596dde5393932c6
+7466	7524	6893404349544210	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-install	2596dde5393932c6
+7524	7583	6893404350122658	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-test	828b184fbb054170
+7583	7656	6893404350850733	CMakeFiles/raylib-populate-complete	249299b9d35e286c
+7583	7656	6893404350850733	raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-done	249299b9d35e286c
+7583	7656	6893404350850733	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/CMakeFiles/raylib-populate-complete	249299b9d35e286c
+7583	7656	6893404350850733	C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/raylib-populate-done	249299b9d35e286c

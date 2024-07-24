@@ -1,0 +1,39 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class GameObject {
+    #Vector2 position
+    #Rectangle hitBox
+    --
+    +getters(all)
+    +draw()
+    +update()
+}
+abstract class Actor {
+    #SpriteSheet sprite
+
+}
+abstract class Enemy {
+    #int hp
+    --
+    +draw()
+}
+
+class Player {
+    -int hp
+}
+
+abstract class Item {
+
+}
+
+
+GameObject <|-- Item
+GameObject <|-- EnvItem
+GameObject <|-- Actor
+Actor <|-- Player
+Actor <|-- Enemy
+Enemy <|-- Thief
+Enemy <|-- Cowboy
+
+@enduml
