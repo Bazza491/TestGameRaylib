@@ -48,8 +48,8 @@ int main() {
 
     // Load all Textures
     Texture2D numbers = LoadTexture("resources/textures/Numbers.png");
-    Texture2D startWand1 = LoadTexture("");
-    Texture2D startWand2 = LoadTexture("");
+//    Texture2D startWand1 = LoadTexture("");
+//    Texture2D startWand2 = LoadTexture("");
     //endregion
 
     //region Sound
@@ -208,8 +208,8 @@ int main() {
     //--------------------------------------------------------------------------------------
     // Unload textures
     UnloadTexture(numbers);
-    UnloadTexture(startWand1);
-    UnloadTexture(startWand2);
+//    UnloadTexture(startWand1);
+//    UnloadTexture(startWand2);
     // Unload sounds
 
     // Unload music
