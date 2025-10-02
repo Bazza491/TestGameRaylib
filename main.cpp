@@ -1,17 +1,15 @@
 #include "raylib.h"
 #include "raymath.h"
 
-
-
-
 #include "Common.h"
 #include "EnvItem.h"
-#include "resources/guns/SpellStorage.h"
-#include "resources/guns/Wand.h"
 #include "Player.h"
 
-#include <iostream>
-#include <string>
+//#include "resources/guns/SpellStorage.h"
+//#include "resources/guns/Wand.h"
+
+//#include <iostream>
+//#include <string>
 
 
 //----------------------------------------------------------------------------------
