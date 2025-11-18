@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-src/src/external/glfw
+# Install script for directory: C:/Users/Bailey/CLionProjects/TestGameRaylib/cmake-build-debug/_deps/raylib-src/src/external/glfw
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,11 +34,11 @@ endif()
 
 # Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "C:/Program Files/JetBrains/CLion 2024.1.4/bin/mingw/bin/objdump.exe")
+  set(CMAKE_OBJDUMP "C:/Program Files/JetBrains/CLion 2021.3.3/bin/mingw/bin/objdump.exe")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/BaileyPaior-Smith/CLionProjects/SecondGame/cmake-build-debug/_deps/raylib-build/raylib/external/glfw/src/cmake_install.cmake")
+  include("C:/Users/Bailey/CLionProjects/TestGameRaylib/cmake-build-debug/_deps/raylib-build/raylib/external/glfw/src/cmake_install.cmake")
 endif()
 

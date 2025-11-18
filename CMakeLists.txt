@@ -22,9 +22,26 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
     endif()
 endif()
 
-# Our Project
+# --- Add nlohmann/json ---
+include(FetchContent)
+FetchContent_Declare(
+        json
+        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+FetchContent_MakeAvailable(json)
 
-add_executable(${PROJECT_NAME} main.cpp Player.h resources/guns/Wand.h resources/guns/Spell.h resources/guns/SpellStorage.h EnvItem.h Common.h Common.cpp EnvItem.cpp Player.cpp resources/guns/Spell.cpp resources/guns/SpellStorage.cpp resources/guns/Wand.cpp TinkeringMenu.cpp TinkeringMenu.h)
+# Our Project
+# Automatically gather all cpp and header files
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
+        "src/*.cpp"
+        "include/*.h"
+        )
+
+add_executable(${PROJECT_NAME} ${SRC_FILES})
+
+# Allow #include "Thing.h"
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 

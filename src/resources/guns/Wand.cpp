@@ -3,8 +3,8 @@
 //
 
 #include "raylib.h"
-#include "SpellStorage.h"
-#include "Wand.h"
+#include "../../../include/resources/guns/SpellStorage.h"
+#include "../../../include/resources/guns/Wand.h"
 
 Wand::Wand(float castDelay, float rechargeTime, int capacity, Texture2D texture) : castDelay(
         castDelay), rechargeTime(rechargeTime), capacity(capacity), texture(texture), spells(capacity){

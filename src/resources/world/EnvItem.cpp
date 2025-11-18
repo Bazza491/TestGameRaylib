@@ -1,8 +1,7 @@
-//
-// Created by BaileyPaior-Smith on 21/11/2022.
-//
-#include "EnvItem.h"
-#include "Common.h"
+#include "../../../include/resources/world/EnvItem.h"
+#include "../../../include/Common.h"
+
+
 
 
 EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Texture2D texture) : rect(rect), blocking(blocking),
@@ -28,6 +27,9 @@ void EnvItem::update() {
         if (-afc >= velocity.y && velocity.y <= afc) velocity.y = 0.0f;
     }
 }
+
+
+
 bool EnvItem::isColliding(Rectangle rec) {
     Rectangle bigger = (Rectangle){rect.x-1.0f, rect.y-1.0f, rect.width+2.0f, rect.height+2.0f};
     return CheckCollisionRecs(rec, bigger);
@@ -66,3 +68,59 @@ Texture2D EnvItem::getTexture() const {
 void EnvItem::setTexture(Texture2D texture) {
     EnvItem::texture = texture;
 }
+bool EnvItem::isDead() const {
+    return dead;
+}
+
+const Vector2 &EnvItem::getVelocity() const {
+    return velocity;
+}
+
+void EnvItem::setVelocity(const Vector2 &velocity) {
+    EnvItem::velocity = velocity;
+}
+
+
+EnvSpell::EnvSpell() : EnvItem() {}
+void EnvSpell::update() {
+    rect.x += velocity.x;
+    rect.y += velocity.y;
+    velocity.x *= AIR_FRICTION_F;
+    velocity.y *= AIR_FRICTION_F;
+    float afc = AIR_FRICTION_C;
+    if (velocity.x <= afc) velocity.x -= afc;
+    if (velocity.x >= -afc) velocity.x -= afc;
+    if (velocity.x <= afc) velocity.x -= afc;
+    if (velocity.x >= -afc) velocity.x -= afc;
+    if (-afc >= velocity.x && velocity.x <= afc) velocity.x = 0.0f;
+    if (-afc >= velocity.y && velocity.y <= afc) velocity.y = 0.0f;
+
+    if (velocity.x == 0.0f && velocity.y == 0.0f) {
+        dead = true;
+    }
+}
+
+//void EnvSpell::setCastState(CastState state) {
+//    castState = state;
+//}
+
+EnvSparkBolt::EnvSparkBolt(){}
+
+void EnvSparkBolt::update() {
+    rect.x += velocity.x;
+    rect.y += velocity.y;
+    velocity.x *= AIR_FRICTION_F;
+    velocity.y *= AIR_FRICTION_F;
+    float afc = AIR_FRICTION_C;
+    if (velocity.x <= afc) velocity.x -= afc;
+    if (velocity.x >= -afc) velocity.x -= afc;
+    if (velocity.x <= afc) velocity.x -= afc;
+    if (velocity.x >= -afc) velocity.x -= afc;
+    if (-afc >= velocity.x && velocity.x <= afc) velocity.x = 0.0f;
+    if (-afc >= velocity.y && velocity.y <= afc) velocity.y = 0.0f;
+
+    if (velocity.x == 0.0f && velocity.y == 0.0f) {
+        dead = true;
+    }
+}
+

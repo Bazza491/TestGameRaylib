@@ -1,12 +1,14 @@
+#include <iostream>
 #include "raylib.h"
 #include "raymath.h"
 
-#include "Common.h"
-#include "EnvItem.h"
-#include "Player.h"
+#include "../include/Common.h"
+#include "../include/resources/world/EnvItem.h"
+#include "../include/Player.h"
+#include "../include/resources/world/World.h"
 
 //#include "resources/guns/SpellStorage.h"
-//#include "resources/guns/Wand.h"
+#include "../include/resources/guns/Wand.h"
 
 //#include <iostream>
 //#include <string>
@@ -15,7 +17,7 @@
 //----------------------------------------------------------------------------------
 // Module functions declaration
 //----------------------------------------------------------------------------------
-void UpdateCameraCenter(Camera2D* camera, const Player &player, EnvItem* envItems, int envItemsLength, float deltaTime,
+void UpdateCameraCenter(Camera2D* camera, const Player &player, float deltaTime,
                         int gameScreenWidth, int gameScreenHeight);
 
 //------------------------------------------------------------------------------------
@@ -46,8 +48,8 @@ int main() {
 
     // Load all Textures
     Texture2D numbers = LoadTexture("resources/textures/Numbers.png");
-//    Texture2D startWand1 = LoadTexture("");
-//    Texture2D startWand2 = LoadTexture("");
+    Texture2D startWand1 = LoadTexture("");
+    Texture2D startWand2 = LoadTexture("");
     //endregion
 
     //region Sound
@@ -69,17 +71,25 @@ int main() {
 
     //region Player
     Player player = Player(numbers);
-//    Wand starting1 = Wand(0.3f, 1.0f, 4, startWand1);
-//    Wand starting2 = Wand(0.1f, 0.2, 10, startWand2);
+    Wand starting1 = Wand(0.3f, 1.0f, 4, startWand1);
+    Wand starting2 = Wand(0.1f, 0.2, 10, startWand2);
     //endregion
 
-    //region Environment
-    EnvItem envItems[] = {
-            {{0, unit * 5, unit * 20, unit}, BLACK},
-            {{unit * 3, unit * 4, unit * 4, unit}, true, false, GRAY},
-            {{unit, unit * 2, unit, unit}, true, false, BLUE}
-    };
-    int envItemsLength = sizeof(envItems)/sizeof(envItems[0]);
+    //region Environment (World singleton)
+    World& world = World::getInstance();
+
+// Add items to the world
+    world.addItem(std::make_unique<EnvItem>(
+            Rectangle{0, unit*5, unit*20, unit}, BLACK));
+    world.addItem(std::make_unique<EnvItem>(
+            Rectangle{unit*3, unit*4, unit*4, unit}, true, false, GRAY));
+    world.addItem(std::make_unique<EnvItem>(
+            Rectangle{unit, unit*2, unit, unit}, true, false, BLUE));
+
+    // Add wands to the player/memory
+    SpellStorage wand1 = SpellStorage(5);
+    wand1.insertSpell(std::make_unique<SparkBolt>(), 1);
+    wand1.insertSpell(std::make_unique<SparkBolt>(), 2); // TODO: Temporary
     //endregion
 
     //region Camera
@@ -91,11 +101,9 @@ int main() {
     //endregion
 
 
-
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
-    // Game main menu
 
+    //region Game main menu
     for (bool gameStarted = false; !gameStarted && !closed; ) {
         float scale = MIN((float)GetScreenWidth()/gameScreenWidth, (float)GetScreenHeight()/gameScreenHeight);
         float deltaTime = GetFrameTime();
@@ -146,53 +154,75 @@ int main() {
             break;
         }
     }
+    //endregion
+
     //--------------------------------------------------------------------------------------
     // Main game loop
     while (!WindowShouldClose()) { // Detect window close button or ESC key
         if (closed) break;
-
-
-
         //----------------------------------------------------------------------------------
         // Update
         //----------------------------------------------------------------------------------
+
         // Initialise frame data
         float scale = MIN((float)GetScreenWidth()/gameScreenWidth, (float)GetScreenHeight()/gameScreenHeight);
         float deltaTime = GetFrameTime();
 
-        //play sounds and animations
+        // Play sounds and animations
 
         // Update Music
-//        UpdateMusicStream(music[currentSong]);
+        // UpdateMusicStream(music[currentSong]);
 
         // Update player.
-        player.update(envItems,envItemsLength,deltaTime);
+        player.update(deltaTime);
 
         //Update Camera/Window
-        UpdateCameraCenter(&camera, player, envItems, envItemsLength, deltaTime, gameScreenWidth, gameScreenHeight);
+        UpdateCameraCenter(&camera, player, deltaTime, gameScreenWidth, gameScreenHeight);
         if (IsKeyPressed(KEY_F11)) ToggleFullscreen();
+
+        Vector2 mouse = GetMousePosition();
+
+        // Convert real mouse → virtual game mouse
+        Vector2 virtualMouse;
+        virtualMouse.x = (mouse.x - (GetScreenWidth() - (gameScreenWidth * scale)) * 0.5f) / scale;
+        virtualMouse.y = (mouse.y - (GetScreenHeight() - (gameScreenHeight * scale)) * 0.5f) / scale;
+        // Now convert virtual → world space
+        Vector2 mouseWorldPos = GetScreenToWorld2D(virtualMouse, camera);
+
+
+        // Cast spell on left mouse button press
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            SpellTransform st = SpellTransform();
+
+            st.position = mouseWorldPos;
+            st.rotation = 0.0f;
+
+            wand1.cast(st);
+        }
 
         //----------------------------------------------------------------------------------
         // Draw
         //----------------------------------------------------------------------------------
         BeginTextureMode(target);
+
         BeginMode2D(camera);
         ClearBackground((Color){ 255, 233, 173, 255 });
         player.draw(1.0f, 1.0f, deltaTime);
 
-        for (int i = 0; i < envItemsLength; i++) {
-            DrawRectangleRec(envItems[i].getRect(), envItems[i].getColor());
-            DrawTextureRec(envItems[i].getTexture(),
-                (Rectangle) {0, 0,envItems[i].getRect().width,envItems[i].getRect().height},
-                    (Vector2) {envItems[i].getRect().x, envItems[i].getRect().y}, WHITE);
-        }
+        world.update(); // call each item's update
+        world.draw();   // draw all items
+
         EndMode2D();
         DrawText(TextFormat("Player Velocity: [%i , %i]",
                             (int)player.getVelX(), (int)player.getVelY()), 10, 10, 20, GRAY);
         DrawText(TextFormat("Player Position: [%i , %i]",
                             (int)player.getPos().x, (int)player.getPos().y), 10, 30, 20, GRAY);
         DrawText(TextFormat("FPS: %i", GetFPS()), 10, 50, 20, GRAY);
+
         EndTextureMode();
+        //----------------------------------------------------------------------------------
+        // Draw everything in the render texture to the screen, properly scaled
+        //----------------------------------------------------------------------------------
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -224,7 +254,7 @@ int main() {
 }
 extern float camVelX = 0;
 extern float camVelY = 0;
-void UpdateCameraCenter(Camera2D* camera, const Player &player, EnvItem* envItems, int envItemsLength, float deltaTime,
+void UpdateCameraCenter(Camera2D* camera, const Player &player, float deltaTime,
                         int gameScreenWidth, int gameScreenHeight) {
     camera->offset = { (float)gameScreenWidth/2.0f, (float)gameScreenHeight/2.0f};
     float targetX = player.getPos().x + player.getHitBox().width/2;

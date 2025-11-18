@@ -5,8 +5,8 @@
 #pragma once
 
 #include "raylib.h"
-#include "resources/guns/SpellStorage.h"
-#include "resources/guns/Wand.h"
+#include "SpellStorage.h"
+#include "Wand.h"
 
 class TinkeringMenu {
 private:

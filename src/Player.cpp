@@ -4,18 +4,20 @@
 
 #include <cmath>
 #include "raylib.h"
-#include "Common.h"
-#include "EnvItem.h"
-#include "resources/guns/SpellStorage.h"
-#include "resources/guns/Wand.h"
-#include "Player.h"
+#include "../include/Common.h"
+#include "../include/resources/world/EnvItem.h"
+#include "../include/resources/guns/SpellStorage.h"
+#include "../include/resources/guns/Wand.h"
+#include "../include/Player.h"
 #include "raymath.h"
+#include "../include/resources/guns/SpellTransform.h"
+#include "../include/resources/world/World.h"
 #include <iostream>
 
 Player::Player(Texture2D spriteSheet) : Player(spriteSheet, {0, 0}) {}
 Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(16), velocity({0, 0}) {
     hitBox = {pos.x, pos.y, 50.0f, 100.0f};
-    selectedWandSlot = 1;
+    selectedWandSlot = 0;
 
     // initialise sprite
     sprite = { 0 };
@@ -72,29 +74,34 @@ void Player::setState(PlayerState newState) {
             break;
     }
 }
-void Player::update (EnvItem *envItems, int envItemsLength, float delta) {
+void Player::update(float delta) {
     float move = IsKeyDown(KEY_A) && IsKeyDown(KEY_D) ? 0.0f :
-            IsKeyDown(KEY_A) ? -1.0f :
-            IsKeyDown(KEY_D) ? 1.0f : 0.0f;
+                 IsKeyDown(KEY_A) ? -1.0f :
+                 IsKeyDown(KEY_D) ?  1.0f : 0.0f;
 
-    // apply friction and gravity
+    // Apply friction and gravity
     velocity.x *= AIR_FRICTION_F;
     velocity.y *= AIR_FRICTION_F;
+
     float afc = AIR_FRICTION_C;
     if (velocity.x > -afc && velocity.x < afc) velocity.x = 0.0f; // prevent overshooting
-    if (velocity.x > afc) velocity.x -= afc;
+    if (velocity.x >  afc) velocity.x -= afc;
     if (velocity.x < -afc) velocity.x += afc;
+
     velocity.y += G;
 
-    // update velocity
-    EnvItem *p = envItems;
-    Rectangle rect;
-    for (int i = 0; i < envItemsLength; i++) {
-        rect = (p+i)->getRect();
-        if (!CheckCollisionRecs(hitBox, rect)) continue; //if colliding with an environment item
+    // --- Collision detection using World singleton ---
+    const auto& envItems = World::getInstance().getItems();
+    for (const auto& env : envItems) {
+        const Rectangle& rect = env->getRect();
+
+        if (!CheckCollisionRecs(hitBox, rect)) continue; // if not colliding, skip
+
         Rectangle overlap = GetCollisionRec(hitBox, rect);
         if (overlap.height < overlap.width) {
+            // Vertical collision
             if (overlap.y == rect.y) {
+                // Landed on top
                 pos.y = rect.y - hitBox.height + 1;
                 if (!IsKeyDown(KEY_W)) {
                     velocity.y = 0;
@@ -102,35 +109,40 @@ void Player::update (EnvItem *envItems, int envItemsLength, float delta) {
                     velocity.y = -20.0f;
                 }
             } else {
+                // Hit from below
                 pos.y = rect.y + rect.height;
                 velocity.y = 0;
             }
         } else {
-            pos.x = (overlap.x == rect.x) ? rect.x - hitBox.width :  rect.x + rect.width;
+            // Horizontal collision
+            pos.x = (overlap.x == rect.x)
+                    ? rect.x - hitBox.width
+                    : rect.x + rect.width;
             velocity.x = 0;
         }
     }
-    if (IsKeyDown(KEY_W) && velocity.y > -MAX_LEVSPEED) { //if holding W and not already moving faster than max levitation speed
-        if (velocity.y > 10.0f) velocity.y = 10.0f; // if falling remove all but 10 velocity
-            velocity.y -= LEVSPEED;
-        if (velocity.y < -MAX_LEVSPEED) velocity.y = -MAX_LEVSPEED; //clamp to max levitation speed
+
+    // Levitation mechanic (W key)
+    if (IsKeyDown(KEY_W) && velocity.y > -MAX_LEVSPEED) {
+        if (velocity.y > 10.0f) velocity.y = 10.0f; // cancel most falling velocity
+        velocity.y -= LEVSPEED;
+        if (velocity.y < -MAX_LEVSPEED) velocity.y = -MAX_LEVSPEED;
     }
+
+    // Horizontal movement
     velocity.x += move * SPEED;
 
+    // Update animation state
     if (velocity.x > 0 && state != walkL) {
         setState(walkL);
     } else if (velocity.x < 0 && state != walkR) {
         setState(walkR);
     }
 
-
-//    velocity.x = SmoothDamp(velocity.x, (float)move*10.0f, velocity.x, 1.0f, 3.0f, delta);
-
-    // apply velocity
+    // Apply velocity
     pos = Vector2Add(pos, velocity);
     hitBox.x = pos.x;
     hitBox.y = pos.y;
-
 }
 
 void Player::draw (float scaleX, float scaleY, float delta) {
@@ -179,7 +191,8 @@ Rectangle Player::getHitBox() const {
     return hitBox;
 }
 void Player::cast() {
-    spells.cast();
+    SpellTransform theTipOfTheWand;
+    spells.cast(theTipOfTheWand);
 }
 
 //    Wand getWand(int slot) {

@@ -4,13 +4,11 @@
 
 #pragma once
 
-//#include "raylib.h"
-
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
 #define AIR_FRICTION_F 0.95f
 #define AIR_FRICTION_C 1.0f
-#define G 2.0f
+#define G 1.0f
 #define SPEED 2.1f
 #define LEVSPEED 3.0f
 #define MAX_LEVSPEED 8.0f

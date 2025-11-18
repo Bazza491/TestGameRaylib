@@ -1,21 +1,20 @@
 //
-// Created by BaileyPaior-Smith on 2/11/2022.
+// Created by Bailey Paior-Smith on 2/11/2022.
 //
 
 #pragma once
 
 
+//#include "resources/world/World.h"
 #include "resources/guns/SpellStorage.h"
+#include "resources/guns/Wand.h"
 
 class Player {
 private:
     Vector2 pos;
     Rectangle hitBox;
     Vector2 velocity;
-//    Wand wandSlot1;
-//    Wand wandSlot2;
-//    Wand wandSlot3;
-//    Wand wandSlot4;
+//    std::array<Wand, 4> wands;
     SpellStorage spells;
     int selectedWandSlot;
     PlayerState state;
@@ -23,11 +22,12 @@ private:
     float timeElapsed;
     int frameSpeed;
 
+
 public:
     Player(Texture2D spriteSheet);
     Player(Texture2D spriteSheet, Vector2 startPos);
     void setState(PlayerState newState);
-    void update (EnvItem *envItems, int envItemsLength, float delta);
+    void update (float delta);
     void draw (float scaleX, float scaleY, float delta);
 
     Vector2 getPos() const;

@@ -7,16 +7,15 @@
 #include "Spell.h"
 #include <vector>
 #include <memory>
-#include <vector>
 
 class SpellStorage {
 private:
     int capacity;
-    std::vector<std::shared_ptr<Spell>> spells;
+    std::vector<std::unique_ptr<Spell>> spells;
     bool castable;
 public:
     SpellStorage();
     explicit SpellStorage(int capacity);
-    void insertSpell(std::shared_ptr<Spell> spell, int slot);
-    void cast();
+    void insertSpell(std::unique_ptr<Spell> spell, int slot);
+    void cast(SpellTransform transform);
 };

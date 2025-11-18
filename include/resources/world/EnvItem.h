@@ -1,15 +1,20 @@
-//
-// Created by BaileyPaior-Smith on 3/11/2022.
-//
 
 #pragma once
+
+#include <memory>
 #include "raylib.h"
+//#include "../guns/CastState.h"
+
+struct CastState;
 
 class EnvItem {
+//    virtual ~EnvItem() = default;
+//    virtual std::unique_ptr<EnvItem> clone() const = 0;
 protected:
     Rectangle rect;
     bool blocking;
     bool hasPhysics;
+    bool dead = false;
     Color color;
     Texture2D texture;
     Vector2 velocity;
@@ -33,4 +38,22 @@ public:
     void setColor(Color color);
     Texture2D getTexture() const;
     void setTexture(Texture2D texture);
+    const Vector2 &getVelocity() const;
+    void setVelocity(const Vector2 &velocity);
+    bool isDead() const;
+};
+
+class EnvSpell : public EnvItem {
+protected:
+//    CastState castState*;
+public:
+    EnvSpell();
+    void setCastState(CastState state);
+    void update() override;
+};
+
+class EnvSparkBolt : public EnvSpell {
+public:
+    EnvSparkBolt();
+    void update() override;
 };
