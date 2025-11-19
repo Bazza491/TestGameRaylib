@@ -395,13 +395,16 @@ JSON_BuildTests:BOOL=OFF
 //Enable CI build targets.
 JSON_CI:BOOL=OFF
 
+//Enable diagnostic positions.
+JSON_Diagnostic_Positions:BOOL=OFF
+
 //Use extended diagnostic messages.
 JSON_Diagnostics:BOOL=OFF
 
 //Disable default integer enum serialization.
 JSON_DisableEnumSerialization:BOOL=OFF
 
-//Place use-defined string literals in the global namespace.
+//Place user-defined string literals in the global namespace.
 JSON_GlobalUDLs:BOOL=ON
 
 //Enable implicit conversions.

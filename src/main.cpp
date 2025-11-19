@@ -1,14 +1,13 @@
-#include <iostream>
 #include "raylib.h"
 #include "raymath.h"
 
-#include "../include/Common.h"
-#include "../include/resources/world/EnvItem.h"
-#include "../include/Player.h"
-#include "../include/resources/world/World.h"
+#include "Common.h"
+#include "world/EnvItem.h"
+#include "Player.h"
+#include "world/World.h"
 
 //#include "resources/guns/SpellStorage.h"
-#include "../include/resources/guns/Wand.h"
+#include "guns/Wand.h"
 
 //#include <iostream>
 //#include <string>
@@ -71,25 +70,11 @@ int main() {
 
     //region Player
     Player player = Player(numbers);
-    Wand starting1 = Wand(0.3f, 1.0f, 4, startWand1);
-    Wand starting2 = Wand(0.1f, 0.2, 10, startWand2);
     //endregion
 
     //region Environment (World singleton)
     World& world = World::getInstance();
-
-// Add items to the world
-    world.addItem(std::make_unique<EnvItem>(
-            Rectangle{0, unit*5, unit*20, unit}, BLACK));
-    world.addItem(std::make_unique<EnvItem>(
-            Rectangle{unit*3, unit*4, unit*4, unit}, true, false, GRAY));
-    world.addItem(std::make_unique<EnvItem>(
-            Rectangle{unit, unit*2, unit, unit}, true, false, BLUE));
-
-    // Add wands to the player/memory
-    SpellStorage wand1 = SpellStorage(5);
-    wand1.insertSpell(std::make_unique<SparkBolt>(), 1);
-    wand1.insertSpell(std::make_unique<SparkBolt>(), 2); // TODO: Temporary
+    world.loadWorld("../resources/data/world1.json");
     //endregion
 
     //region Camera
@@ -173,8 +158,7 @@ int main() {
         // Update Music
         // UpdateMusicStream(music[currentSong]);
 
-        // Update player.
-        player.update(deltaTime);
+
 
         //Update Camera/Window
         UpdateCameraCenter(&camera, player, deltaTime, gameScreenWidth, gameScreenHeight);
@@ -189,15 +173,19 @@ int main() {
         // Now convert virtual → world space
         Vector2 mouseWorldPos = GetScreenToWorld2D(virtualMouse, camera);
 
+        // Update player.
+        player.update(deltaTime, mouseWorldPos);
+
 
         // Cast spell on left mouse button press
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            SpellTransform st = SpellTransform();
-
-            st.position = mouseWorldPos;
-            st.rotation = 0.0f;
-
-            wand1.cast(st);
+            player.cast();
+//            SpellTransform st = SpellTransform(Vector2(), 0);
+//
+//            st.position = mouseWorldPos;
+//            st.rotation = player.getWandRotation();
+//
+//            wand1.cast(st, 5);
         }
 
         //----------------------------------------------------------------------------------
@@ -234,6 +222,8 @@ int main() {
     //--------------------------------------------------------------------------------------
     // De-Initialization
     //--------------------------------------------------------------------------------------
+    // save game state
+    world.saveWorld("../resources/data/world1.json");
     // Unload textures
     UnloadTexture(numbers);
 //    UnloadTexture(startWand1);

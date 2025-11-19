@@ -1,7 +1,3 @@
-//
-// Created by BaileyPaior-Smith on 3/11/2022.
-//
-
 #pragma once
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))

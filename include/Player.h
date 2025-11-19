@@ -1,33 +1,27 @@
-//
-// Created by Bailey Paior-Smith on 2/11/2022.
-//
-
 #pragma once
 
-
-//#include "resources/world/World.h"
-#include "resources/guns/SpellStorage.h"
-#include "resources/guns/Wand.h"
+#include "guns/SpellStorage.h"
+#include "guns/Wand.h"
 
 class Player {
 private:
     Vector2 pos;
     Rectangle hitBox;
     Vector2 velocity;
-//    std::array<Wand, 4> wands;
-    SpellStorage spells;
+    std::array<std::unique_ptr<Wand>, 4> wands;
     int selectedWandSlot;
-    PlayerState state;
+    SpellStorage spells;
     SpriteSheet sprite;
+    PlayerState state;
     float timeElapsed;
     int frameSpeed;
-
+    float wandRotation;
 
 public:
     Player(Texture2D spriteSheet);
     Player(Texture2D spriteSheet, Vector2 startPos);
     void setState(PlayerState newState);
-    void update (float delta);
+    void update (float delta, Vector2 mouseWorldPos);
     void draw (float scaleX, float scaleY, float delta);
 
     Vector2 getPos() const;
@@ -40,6 +34,8 @@ public:
     void setVelocity(Vector2 newVelocity);
     Rectangle getHitBox() const;
     void cast();
+    float getWandRotation() const;
+    Vector2 getWandTip() const;
 
 };
 

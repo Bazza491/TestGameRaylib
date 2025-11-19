@@ -1,8 +1,5 @@
-//
-// Created by BaileyPaior-Smith on 21/11/2022.
-//
 #include "raylib.h"
-#include "../include/Common.h"
+#include "Common.h"
 #include "raymath.h"
 
 void drawSprite(SpriteSheet* sprite, float x, float y, float ang, float scale, Color c)

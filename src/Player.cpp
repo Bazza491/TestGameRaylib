@@ -1,18 +1,17 @@
-//
-// Created by BaileyPaior-Smith on 21/11/2022.
-//
-
 #include <cmath>
 #include "raylib.h"
-#include "../include/Common.h"
-#include "../include/resources/world/EnvItem.h"
-#include "../include/resources/guns/SpellStorage.h"
-#include "../include/resources/guns/Wand.h"
-#include "../include/Player.h"
+#include "Common.h"
+#include "world/EnvItem.h"
+#include "guns/SpellStorage.h"
+#include "guns/Wand.h"
+#include "Player.h"
 #include "raymath.h"
-#include "../include/resources/guns/SpellTransform.h"
-#include "../include/resources/world/World.h"
-#include <iostream>
+#include "guns/SpellTransform.h"
+#include "world/World.h"
+#include "guns/Spell.h"
+
+const int HAND_OFFSET_X = 40; // offset right/50
+const int HAND_OFFSET_Y = 35; // offset down/100
 
 Player::Player(Texture2D spriteSheet) : Player(spriteSheet, {0, 0}) {}
 Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(16), velocity({0, 0}) {
@@ -31,7 +30,45 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
     // default animation data
     sprite.startFrame = 0;
     sprite.aniLength = 10;
+
+    //region initialise wands
+    for (int i = 0; i < 4; i++) {
+        //TODO: Finalise starting wand stats
+        WandStats wandStats = WandStats(
+                false,
+                1,
+                0.5f,
+                2.0f,
+                100,
+                10,
+                6,
+                30.0f);
+
+
+        // create a placeholder colored texture
+        Color placeholderColor;
+        switch (i) {
+            case 0: placeholderColor = BLACK; break;
+            case 1: placeholderColor = GREEN; break;
+            case 2: placeholderColor = BLUE; break;
+            case 3: placeholderColor = YELLOW; break;
+            default: placeholderColor = WHITE; break;
+        }
+
+        Image wandImage = GenImageColor(64, 16, placeholderColor); // 32x8 rectangle
+        Texture2D wandTexture = LoadTextureFromImage(wandImage);
+        UnloadImage(wandImage); // free the CPU-side image
+
+        wands[i] = std::make_unique<Wand>(wandStats, wandTexture);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBoltTrigger>(), 0);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 1);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 2);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 3);
+    }
+    selectedWandSlot = 0;
+    //endregion
 }
+
 void Player::setState(PlayerState newState) {
     state = newState;
     switch (state) {
@@ -74,7 +111,8 @@ void Player::setState(PlayerState newState) {
             break;
     }
 }
-void Player::update(float delta) {
+
+void Player::update(float delta, Vector2 mouseWorldPos) {
     float move = IsKeyDown(KEY_A) && IsKeyDown(KEY_D) ? 0.0f :
                  IsKeyDown(KEY_A) ? -1.0f :
                  IsKeyDown(KEY_D) ?  1.0f : 0.0f;
@@ -143,6 +181,11 @@ void Player::update(float delta) {
     pos = Vector2Add(pos, velocity);
     hitBox.x = pos.x;
     hitBox.y = pos.y;
+
+    // Update wand rotation
+    Vector2 handPos = { pos.x + HAND_OFFSET_X, pos.y + HAND_OFFSET_Y };
+    Vector2 diff = { mouseWorldPos.x - handPos.x, mouseWorldPos.y - handPos.y };
+    wandRotation = atan2f(diff.y, diff.x) * RAD2DEG;
 }
 
 void Player::draw (float scaleX, float scaleY, float delta) {
@@ -161,8 +204,61 @@ void Player::draw (float scaleX, float scaleY, float delta) {
             sprite.frame = sprite.startFrame;
         }
     }
+
+    // draw held wand if it exists
+    if (wands[selectedWandSlot]) {
+        Texture2D wandTex = wands[selectedWandSlot]->getTexture();
+        Vector2 origin = { 0, (float)wandTex.height / 2.0f };
+        Vector2 handPos = { pos.x + HAND_OFFSET_X, pos.y + HAND_OFFSET_Y};
+
+        DrawTexturePro(
+                wandTex,
+                { 0, 0, (float)wandTex.width, (float)wandTex.height },
+                { handPos.x, handPos.y, (float)wandTex.width, (float)wandTex.height },
+                origin,
+                wandRotation,
+                WHITE
+        );
+    }
 }
 
+Vector2 Player::getWandTip() const {
+    float rad = wandRotation * DEG2RAD;
+    Texture2D wandTex = wands[selectedWandSlot]->getTexture();
+    Vector2 origin = {0, (float)wandTex.height / 2.0f}; // same as DrawTexturePro
+
+    // Tip offset relative to origin
+    Vector2 tipOffset = { (float)wandTex.width - origin.x, 0 };
+
+    // Rotate tip offset
+    Vector2 rotatedTip = {
+            tipOffset.x * cosf(rad) - tipOffset.y * sinf(rad),
+            tipOffset.x * sinf(rad) + tipOffset.y * cosf(rad)
+    };
+
+    // Tip world position
+    Vector2 tipPos = { pos.x + HAND_OFFSET_X + rotatedTip.x, pos.y + HAND_OFFSET_Y + rotatedTip.y };
+
+    // Adjust for spell origin
+    tipPos.x -= 4.0f;
+    tipPos.y -= 4.0f;
+
+    return tipPos;
+}
+
+void Player::cast() {
+    if (!wands[selectedWandSlot]) return;
+
+    Vector2 tipPos = getWandTip();
+
+    // Create spell transform
+    SpellTransform theTipOfTheWand(tipPos, wandRotation);
+
+    // Cast spell
+    wands[selectedWandSlot]->cast(theTipOfTheWand);
+}
+
+//region Getters and Setters
 Vector2 Player::getPos() const {
     return pos;
 }
@@ -190,42 +286,7 @@ void Player::setVelocity(Vector2 newVelocity) {
 Rectangle Player::getHitBox() const {
     return hitBox;
 }
-void Player::cast() {
-    SpellTransform theTipOfTheWand;
-    spells.cast(theTipOfTheWand);
+float Player::getWandRotation() const {
+    return wandRotation;
 }
-
-//    Wand getWand(int slot) {
-//        switch (slot) {
-//            case 1:
-//                return wandSlot1;
-//            case 2:
-//                return wandSlot2;
-//            case 3:
-//                return wandSlot3;
-//            case 4:
-//                return wandSlot4;
-//            default:
-//                TraceLog(LOG_DEBUG, "getWand() out of bounds");
-//                return wandSlot1;
-//        }
-//    }
-//    void setWand (Wand wand, int slot) {
-//        switch (slot) {
-//            case 1:
-//                wandSlot1 = wand;
-//                break;
-//            case 2:
-//                wandSlot2 = wand;
-//                break;
-//            case 3:
-//                wandSlot3 = wand;
-//                break;
-//            case 4:
-//                wandSlot4 = wand;
-//                break;
-//            default:
-//                TraceLog(LOG_DEBUG, "setWand() out of bounds");
-//                break;
-//        }
-//    }
+//endregion

@@ -26,7 +26,7 @@ endif()
 include(FetchContent)
 FetchContent_Declare(
         json
-        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
 )
 FetchContent_MakeAvailable(json)
 
@@ -43,7 +43,12 @@ add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 #set(raylib_VERBOSE 1)
-target_link_libraries(${PROJECT_NAME} raylib)
+# Link Raylib + nlohmann/json
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        raylib
+        nlohmann_json::nlohmann_json
+        )
 
 # Web Configurationsn
 if (${PLATFORM} STREQUAL "Web")
