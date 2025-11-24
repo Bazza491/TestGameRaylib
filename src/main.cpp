@@ -1,3 +1,4 @@
+#include <iostream>
 #include "raylib.h"
 #include "raymath.h"
 
@@ -206,8 +207,13 @@ int main() {
         DrawText(TextFormat("Player Position: [%i , %i]",
                             (int)player.getPos().x, (int)player.getPos().y), 10, 30, 20, GRAY);
         DrawText(TextFormat("FPS: %i", GetFPS()), 10, 50, 20, GRAY);
+        DrawText(TextFormat("World items size: [%i]",
+                            world.getItems().size()), 10, 70, 20, GRAY);
 
         EndTextureMode();
+
+
+
         //----------------------------------------------------------------------------------
         // Draw everything in the render texture to the screen, properly scaled
         //----------------------------------------------------------------------------------

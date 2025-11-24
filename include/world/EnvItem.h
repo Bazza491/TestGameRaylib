@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "raylib.h"
+#include "guns/CastTypes.h"
 
 #include <nlohmann/json.hpp>
 
@@ -51,12 +52,14 @@ class EnvSpell : public EnvItem {
 protected:
     std::unique_ptr<CastState> castState;
     std::function<void()> onExpire;
+    ProjectileStats baseStats;
 public:
     EnvSpell();
     ~EnvSpell();
     void setCastState(CastState&& state);
     void update() override;
     int getCastStateSize() const;
+    ProjectileStats getBaseStats() const;
 
     nlohmann::json toJson() const override;
 };

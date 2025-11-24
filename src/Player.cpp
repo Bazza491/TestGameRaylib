@@ -9,6 +9,7 @@
 #include "guns/SpellTransform.h"
 #include "world/World.h"
 #include "guns/Spell.h"
+#include "guns/CastTypes.h"
 
 const int HAND_OFFSET_X = 40; // offset right/50
 const int HAND_OFFSET_Y = 35; // offset down/100
@@ -34,16 +35,26 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
     //region initialise wands
     for (int i = 0; i < 4; i++) {
         //TODO: Finalise starting wand stats
-        WandStats wandStats = WandStats(
-                false,
-                1,
-                0.5f,
-                2.0f,
-                100,
-                10,
-                6,
-                30.0f);
+        CastContext castContext = {
+                .remainingCapacity = 10,
+                .remainingDraw = 1,
+                .shuffle = false,
+                .castDelay = 0.2f,
+                .rechargeTime = 2.0f,
+                .rechargeBonus = 0.0f,
+                .currentIndex = 0,
+                .reachedEnd = true
+        };
 
+        ProjectileStats projStats = {
+                .damage = 0.0f,
+                .speed = 1.0f,
+                .spread = 30.0f,
+                .knockback = 0.0f,
+                .lifetime = 0.0f,
+                .size = 1.0f,
+                .tint = WHITE
+        };
 
         // create a placeholder colored texture
         Color placeholderColor;
@@ -59,11 +70,13 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
         Texture2D wandTexture = LoadTextureFromImage(wandImage);
         UnloadImage(wandImage); // free the CPU-side image
 
-        wands[i] = std::make_unique<Wand>(wandStats, wandTexture);
+        wands[i] = std::make_unique<Wand>(castContext, projStats, wandTexture);
         wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBoltTrigger>(), 0);
         wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 1);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 2);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 3);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 2);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 3);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 4);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 5);
     }
     selectedWandSlot = 0;
     //endregion

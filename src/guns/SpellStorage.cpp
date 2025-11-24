@@ -22,14 +22,11 @@ void SpellStorage::insertSpell(std::unique_ptr<Spell> spell, int slot) {
     spells[slot] = std::move(spell);
 }
 
-CastState SpellStorage::cast(const SpellTransform& transform, CastState& state) {
-    if (spells.empty()) return CastState{};
-
-
-    CastState cState;
+void SpellStorage::cast(const SpellTransform& transform, CastState& state) {
+    if (spells.empty()) return;
 
     int remainingCapacity = capacity;
-    int remainingDraw     = state.draw;
+    int remainingDraw     = state.ctx.remainingDraw;
     int index             = 0;
 
     while (remainingCapacity > 0 &&
@@ -43,11 +40,9 @@ CastState SpellStorage::cast(const SpellTransform& transform, CastState& state) 
         }
 
         // Let the spell modify index/capacity/draw through references
-        spell->cast(spells, index, transform, remainingCapacity, remainingDraw, cState);
+        spell->cast(spells, index, transform, state);
 
         // move to next spell unless spell changed index itself (trigger etc.)
         ++index;
     }
-
-    return cState;  // moved out by value – OK, CastState is move-only
 }

@@ -26,6 +26,8 @@ class Spell {
 protected:
     std::string name;
     spellType type;
+    CastContext     castMods;   // modifiers this spell applies
+    ProjectileStats projMods;   // modifiers this spell applies
     std::unique_ptr<CastState> castState;
 public:
     Spell() : name("Empty Slot") {}
@@ -40,9 +42,7 @@ public:
     // - cState: where env spells get added
     virtual void cast(const std::vector<std::unique_ptr<Spell>>& spells,
                       int& index,
-                      const SpellTransform& transform,
-                      int& remainingCapacity,
-                      int& remainingDraw,
+                      const SpellTransform& origin,
                       CastState& cState) = 0;
 };
 
@@ -52,8 +52,6 @@ public:
     void cast(const std::vector<std::unique_ptr<Spell>>& spells,
               int& index,
               const SpellTransform& transform,
-              int& remainingCapacity,
-              int& remainingDraw,
               CastState& cState) override;
 };
 
@@ -63,8 +61,6 @@ public:
     void cast(const std::vector<std::unique_ptr<Spell>>& spells,
               int& index,
               const SpellTransform& transform,
-              int& remainingCapacity,
-              int& remainingDraw,
               CastState& cState) override;
 };
 
@@ -74,7 +70,5 @@ public:
     void cast(const std::vector<std::unique_ptr<Spell>>& spells,
               int& index,
               const SpellTransform& transform,
-              int& remainingCapacity,
-              int& remainingDraw,
               CastState& cState) override;
 };

@@ -128,6 +128,15 @@ EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
         this->dead = true;
     };
     color = BLUE;
+    baseStats = ProjectileStats{
+            .damage = 0.0f,
+            .speed = 30.0f,
+            .spread = 30.0f,
+            .knockback = 0.0f,
+            .lifetime = 0.0f,
+            .size = 0.0f,
+            .tint = WHITE
+    };
 }
 
 EnvSpell::~EnvSpell() = default;
@@ -155,12 +164,22 @@ int EnvSpell::getCastStateSize() const {
     return castState->envSpells.size();
 }
 
+ProjectileStats EnvSpell::getBaseStats() const {
+    return baseStats;
+}
 
 EnvSparkBolt::EnvSparkBolt(){
     this->onExpire = [this]() {
         this->dead = true;
     };
-    color = GREEN;
+//    color = GREEN;
+    baseStats = ProjectileStats{
+            .damage = 3.0f,
+            .speed = 30.0f,
+            .lifetime = 5.0f,
+            .size = 8.0f,
+            .tint = GREEN
+    };
 }
 
 void EnvSparkBolt::update() {
@@ -196,16 +215,26 @@ json EnvWand::toJson() const {
 EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
     this->onExpire = [this]() {
         if (this->castState) {
-            // Use whatever API you want on CastState
-            // If CastState has a free function castToWorld or similar:
+
+            float rot = atan2f(this->velocity.y, this->velocity.x) * RAD2DEG; // Calculate which way the spell is currently travelling
+            // TODO: Payload should cast in opposite direction if spell has hit wall
+
+            // Pass the transform and the CastState metadata
             this->castState->spawnAll(
-                    SpellTransform({ rect.x, rect.y }, atan2f(this->velocity.y, this->velocity.x) * (180.0f / PI)),
+                    SpellTransform({ rect.x, rect.y }, rot),
                     *this->castState
-                    );
+            );
         }
         this->dead = true;
     };
-    color = RED;
+//    color = RED;
+    baseStats = ProjectileStats{
+            .damage = 3.0f,
+            .speed = 30.0f,
+            .lifetime = 5.0f,
+            .size = 8.0f,
+            .tint = RED
+    };
 }
 
 void EnvSparkBoltTrigger::update() {

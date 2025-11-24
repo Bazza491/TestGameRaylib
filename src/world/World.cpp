@@ -173,8 +173,9 @@ void World::saveWorld(const std::string& path) const {
 // Item management
 // --------------------
 void World::addItem(std::unique_ptr<EnvItem> item) {
-    items.push_back(std::move(item));
-    std::cout << "Added item. Total items: " << items.size() << "\n";
+    // Don't touch items directly during update; queue it
+    pendingAdd.push_back(std::move(item));
+    std::cout << "Added item to pending world add queue. Total items: " << items.size() << "\n";
 }
 
 const std::vector<std::unique_ptr<EnvItem>>& World::getItems() const {
@@ -189,10 +190,11 @@ void World::clear() {
 // Update / Draw
 // --------------------
 void World::update() {
+    // 1) Update current items
     for (auto& item : items) {
         item->update();
     }
-    // Remove items that are marked for deletion
+    // 2) Remove items that are marked for deletion
     items.erase(
             std::remove_if(items.begin(), items.end(),
                            [](const std::unique_ptr<EnvItem>& e) {
@@ -200,6 +202,15 @@ void World::update() {
                            }),
             items.end()
     );
+    // 3) Append any newly spawned items (triggers/projectiles/etc)
+    if (!pendingAdd.empty()) {
+        for (auto &p : pendingAdd) {
+            std::cout << "Adding item to world from pending queue...\n";
+            items.push_back(std::move(p));
+            std::cout << "Added item to world. Total items: " << items.size() << "\n";
+        }
+        pendingAdd.clear();
+    }
 }
 
 void World::draw() const {

@@ -1,43 +1,40 @@
 #pragma once
 
 #include "SpellStorage.h"
-struct WandStats {
-    bool shuffle;
-    int spellsPCast;
-    float castDelay;
-    float rechargeTime;
-    int manaMax;
-    int chargeSpd;
-    int capacity;
-    float spread;
-
-    WandStats() : shuffle(false), spellsPCast(1), castDelay(0.5f), rechargeTime(2.0f),
-                 manaMax(100), chargeSpd(10), capacity(5), spread(0.0f) {}
-    WandStats(bool shuffle, int spellsPCast, float castDelay, float rechargeTime,
-              int manaMax, int chargeSpd, int capacity, float spread) :
-              shuffle(shuffle), spellsPCast(spellsPCast), castDelay(castDelay),
-              rechargeTime(rechargeTime), manaMax(manaMax), chargeSpd(chargeSpd),
-              capacity(capacity), spread(spread) {}
-};
 
 class SpellTransform;
 
 
 class Wand {
 private:
-    WandStats stats;
+    CastContext baseCtx;
+    ProjectileStats baseProj;
+    int spellsPCast = 1; // how many spells are cast per cast action
+
     Texture2D texture;
     SpellStorage spells;
+
+    // For recharge & partial casts (future)
+    int   nextIndex     = 0;    // where next cast starts in spell list
+    float rechargeTimer = 0.0f; // time left until cast is allowed
 public:
-    Wand(WandStats stats, Texture2D texture);
-    void cast(SpellTransform transform);
-//    void cast(SpellTransform transform, int slot);
+    Wand(const CastContext& baseCtx,
+         const ProjectileStats& baseProj,
+         Texture2D texture);
+
+    void cast(const SpellTransform& origin);
+//    void cast(SpellTransform transform, int slot); // Wand tracks it's own current slot, this should not exist
+    void update(float delta);
+
+    SpellStorage&       getSpellStorage()       { return spells; }
+    const SpellStorage& getSpellStorage() const { return spells; }
+
+    Texture2D getTexture() const { return texture; }
+
     float getCastDelay() const;
     void setCastDelay(float delay);
     float getRechargeTime() const;
     int getCapacity() const;
     void setCapacity(int size);
-    Texture2D getTexture() const { return texture; }
-    int getSpellsPCast() const { return stats.spellsPCast; }
-    SpellStorage& getSpellStorage() { return spells; }
+    int getSpellsPCast() const { return spellsPCast; }
 };

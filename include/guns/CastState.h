@@ -4,18 +4,14 @@
 #include <memory>
 #include "world/EnvItem.h"
 //#include "SpellTransform.h"
+#include "guns/CastTypes.h"
 
 class EnvSpell;   // forward-declare
 struct SpellTransform;
 
 struct CastState {
-    bool shuffle;
-    int draw;
-    float castDelay;
-    float rechargeMod;
-    int damage;
-    float spread;
-    float knockback;
+    CastContext ctx;
+    ProjectileStats proj;
 
     std::vector<std::unique_ptr<EnvSpell>> envSpells;
 
@@ -29,17 +25,13 @@ struct CastState {
     CastState(CastState&&) noexcept = default;
     CastState& operator=(CastState&&) noexcept = default;
 
-    // Later: a method to push this into the world
-    void spawnAll(const SpellTransform& transform, CastState& state);
+    void spawnAll(const SpellTransform& origin, CastState& state);
 
-    void modCastDelay(int mod);
-    void modRechargeMod(int mod);
-    void modDamage(int mod);
-    void modSpread(int mod);
-    void modKnockback(int mod);
     void addSpell(std::unique_ptr<EnvSpell> s);
 
-    void modAll(CastState state);
+    // Spells use this to apply their "modifiers"
+    void applyModifiers(const CastContext& deltaCtx,
+                        const ProjectileStats& deltaProj);
 
 
 };

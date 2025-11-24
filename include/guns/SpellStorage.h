@@ -18,7 +18,7 @@ public:
     void insertSpell(std::unique_ptr<Spell> spell, int slot);
 
     // casts the wand, populates CastState, and returns it
-    CastState cast(const SpellTransform& transform, CastState &state);
+    void cast(const SpellTransform& transform, CastState &state);
 
     int getCapacity() const { return capacity; }
 
