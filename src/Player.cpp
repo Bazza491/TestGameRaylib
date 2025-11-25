@@ -10,6 +10,7 @@
 #include "world/World.h"
 #include "guns/Spell.h"
 #include "guns/CastTypes.h"
+#include <utility>
 
 const int HAND_OFFSET_X = 40; // offset right/50
 const int HAND_OFFSET_Y = 35; // offset down/100
@@ -295,4 +296,21 @@ float Player::getMana() const {
     float r = wands[selectedWandSlot]->getMana();
     return r;
 }
+
+bool Player::swapWands(int first, int second) {
+    if (first < 0 || second < 0) return false;
+    if (first >= (int)wands.size() || second >= (int)wands.size()) return false;
+    if (first == second) return false;
+
+    std::swap(wands[first], wands[second]);
+
+    if (selectedWandSlot == first) {
+        selectedWandSlot = second;
+    } else if (selectedWandSlot == second) {
+        selectedWandSlot = first;
+    }
+
+    return true;
+}
+
 //endregion

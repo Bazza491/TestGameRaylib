@@ -6,8 +6,14 @@
 // ---------------------------
 constexpr float GUI_MARGIN          = 20.0f;
 
+constexpr float WAND_SLOT_BORDER    = 2.0f;
 constexpr float WAND_SLOT_SIZE      = 80.0f;
 constexpr float WAND_SLOT_SPACING   = 15.0f;
+constexpr float WAND_SLOT_PADDING   = 6.0f;
+constexpr Color WAND_SLOT_COLOR             = {40, 40, 40, 255};
+constexpr Color WAND_SLOT_OUTLINE_COLOR     = {255, 255, 255, 255};
+constexpr Color WAND_SLOT_SELECTED_COLOR    = {120, 170, 255, 255};
+constexpr Color WAND_SLOT_OCCUPIED_COLOR    = {90, 90, 90, 255};
 
 constexpr float SPELL_SLOT_SIZE     = 60.0f;
 constexpr float SPELL_SLOT_SPACING  = 10.0f;
