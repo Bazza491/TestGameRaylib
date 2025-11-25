@@ -1,5 +1,8 @@
 #pragma once
 
+#include <array>
+#include <memory>
+
 #include "guns/SpellStorage.h"
 #include "guns/Wand.h"
 #include "Common.h"
@@ -48,6 +51,10 @@ public:
     [[nodiscard]] float getStamina() const { return stamina; }
     [[nodiscard]] float getMaxMana() const;
     [[nodiscard]] float getMana() const;
+    [[nodiscard]] int getSelectedWandSlot() const { return selectedWandSlot; }
+    [[nodiscard]] const std::array<std::unique_ptr<Wand>, 4>& getWandSlots() const { return wands; }
+
+    bool swapWands(int first, int second);
 
 };
 

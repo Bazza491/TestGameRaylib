@@ -22,7 +22,6 @@ void GuiManager::update(float dt) {
 }
 
 void GuiManager::draw() const {
-
     for (auto& item : items)
         if (item->visible) item->draw();
 
