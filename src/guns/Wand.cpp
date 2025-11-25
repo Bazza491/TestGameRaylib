@@ -20,6 +20,10 @@ void Wand::update(float delta) {
         rechargeTimer -= delta;
         if (rechargeTimer < 0.0f) rechargeTimer = 0.0f;
     }
+    if (currentMana < maxMana) {
+        currentMana += manaChargeSpeed * delta;
+        if (currentMana > maxMana) currentMana = maxMana;
+    }
 }
 
 void Wand::cast(const SpellTransform& origin) {

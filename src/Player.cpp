@@ -272,34 +272,27 @@ void Player::cast() {
 }
 
 //region Getters and Setters
-Vector2 Player::getPos() const {
-    return pos;
-}
 void Player::setPos(Vector2 newPos) {
     pos = newPos;
-}
-float Player::getVelY() const {
-    return velocity.y;
 }
 void Player::setVelY(float velY) {
     velocity.y = velY;
 }
-float Player::getVelX() const {
-    return velocity.x;
-}
 void Player::setVelX(float velX) {
     velocity.x = velX;
-}
-Vector2 Player::getVelocity() const {
-    return velocity;
 }
 void Player::setVelocity(Vector2 newVelocity) {
     velocity = newVelocity;
 }
-Rectangle Player::getHitBox() const {
-    return hitBox;
-}
 float Player::getWandRotation() const {
     return wandRotation;
+}
+float Player::getMaxMana() const {
+    float r = wands[selectedWandSlot]->getMaxMana();
+    return r;
+}
+float Player::getMana() const {
+    float r = wands[selectedWandSlot]->getMana();
+    return r;
 }
 //endregion

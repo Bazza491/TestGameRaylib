@@ -2,6 +2,7 @@
 
 #include "guns/SpellStorage.h"
 #include "guns/Wand.h"
+#include "Common.h"
 
 class Player {
 private:
@@ -16,6 +17,10 @@ private:
     float timeElapsed;
     int frameSpeed;
     float wandRotation;
+    int maxHealth = 100;
+    int health = 90;
+    float maxStamina = 100.0f;
+    float stamina = 75.0f;
 
 public:
     Player(Texture2D spriteSheet);
@@ -24,18 +29,25 @@ public:
     void update (float delta, Vector2 mouseWorldPos);
     void draw (float scaleX, float scaleY, float delta);
 
-    Vector2 getPos() const;
+    [[nodiscard]] Vector2 getPos() const { return pos;}
     void setPos(Vector2 newPos);
-    float getVelY() const;
+    [[nodiscard]] float getVelY() const { return velocity.y;}
     void setVelY(float velY);
-    float getVelX() const;
+    [[nodiscard]] float getVelX() const { return velocity.x;}
     void setVelX(float velX);
-    Vector2 getVelocity() const;
+    [[nodiscard]] Vector2 getVelocity() const { return velocity;}
     void setVelocity(Vector2 newVelocity);
-    Rectangle getHitBox() const;
+    [[nodiscard]] Rectangle getHitBox() const { return hitBox;}
     void cast();
-    float getWandRotation() const;
-    Vector2 getWandTip() const;
+    [[nodiscard]] float getWandRotation() const;
+    [[nodiscard]] Vector2 getWandTip() const;
+
+    [[nodiscard]] int getMaxHealth() const { return maxHealth; }
+    [[nodiscard]] int getHealth() const { return health;}
+    [[nodiscard]] float getMaxStamina() const { return maxStamina; }
+    [[nodiscard]] float getStamina() const { return stamina; }
+    [[nodiscard]] float getMaxMana() const;
+    [[nodiscard]] float getMana() const;
 
 };
 

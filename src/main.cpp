@@ -9,6 +9,10 @@
 
 //#include "resources/guns/SpellStorage.h"
 #include "guns/Wand.h"
+#include "gui/GuiManager.h"
+#include "gui/items/HealthBar.h"
+#include "gui/items/ManaBar.h"
+#include "gui/items/StaminaBar.h"
 
 //#include <iostream>
 //#include <string>
@@ -48,8 +52,8 @@ int main() {
 
     // Load all Textures
     Texture2D numbers = LoadTexture("resources/textures/Numbers.png");
-    Texture2D startWand1 = LoadTexture("");
-    Texture2D startWand2 = LoadTexture("");
+//    Texture2D startWand1 = LoadTexture("");
+//    Texture2D startWand2 = LoadTexture("");
     //endregion
 
     //region Sound
@@ -67,6 +71,9 @@ int main() {
     // Play starting music
     PlayMusicStream(music[currentSong]);
     SetAudioStreamVolume(music[currentSong].stream, 1.0f);
+
+    // Load all SFX
+    // TODO load sfx here
     //endregion
 
     //region Player
@@ -76,6 +83,13 @@ int main() {
     //region Environment (World singleton)
     World& world = World::getInstance();
     world.loadWorld("../resources/data/world1.json");
+    //endregion
+
+    //region gui elements (gui singleton)
+    GuiManager& gui = GuiManager::getInstance();
+    gui.add<HealthBar>(&player);
+    gui.add<ManaBar>(&player);
+    gui.add<StaminaBar>(&player);
     //endregion
 
     //region Camera
@@ -100,7 +114,6 @@ int main() {
         virtualMouse.x = (mouse.x - (GetScreenWidth() - (gameScreenWidth*scale))*0.5f)/scale;
         virtualMouse.y = (mouse.y - (GetScreenHeight() - (gameScreenHeight*scale))*0.5f)/scale;
         virtualMouse = Vector2Clamp(virtualMouse, (Vector2){ 0, 0 }, (Vector2){ (float)gameScreenWidth, (float)gameScreenHeight });
-
         //----------------------------------------------------------------------------------
         // Draw
         //----------------------------------------------------------------------------------
@@ -144,6 +157,7 @@ int main() {
 
     //--------------------------------------------------------------------------------------
     // Main game loop
+    //--------------------------------------------------------------------------------------
     while (!WindowShouldClose()) { // Detect window close button or ESC key
         if (closed) break;
         //----------------------------------------------------------------------------------
@@ -158,8 +172,6 @@ int main() {
 
         // Update Music
         // UpdateMusicStream(music[currentSong]);
-
-
 
         //Update Camera/Window
         UpdateCameraCenter(&camera, player, deltaTime, gameScreenWidth, gameScreenHeight);
@@ -177,16 +189,13 @@ int main() {
         // Update player.
         player.update(deltaTime, mouseWorldPos);
 
+        gui.update(deltaTime); // update gui elements
+        world.update(); // update world items
+
 
         // Cast spell on left mouse button press
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            player.cast();
-//            SpellTransform st = SpellTransform(Vector2(), 0);
-//
-//            st.position = mouseWorldPos;
-//            st.rotation = player.getWandRotation();
-//
-//            wand1.cast(st, 5);
+            player.cast(); //TODO Cast cooldown managed by Wand.h
         }
 
         //----------------------------------------------------------------------------------
@@ -198,17 +207,32 @@ int main() {
         ClearBackground((Color){ 255, 233, 173, 255 });
         player.draw(1.0f, 1.0f, deltaTime);
 
-        world.update(); // call each item's update
         world.draw();   // draw all items
 
         EndMode2D();
+
+
+        // Draw debug panel TODO: Temporary
+        float debugPanelHeight = 180;
+        float debugPanelWidth = 300;
+        const float GUI_MARGIN = 20;
+
+        Rectangle debugPanel = {
+                GUI_MARGIN,
+                gameScreenHeight - GUI_MARGIN - debugPanelHeight,
+                debugPanelWidth,
+                debugPanelHeight
+        };
+
         DrawText(TextFormat("Player Velocity: [%i , %i]",
-                            (int)player.getVelX(), (int)player.getVelY()), 10, 10, 20, GRAY);
+                            (int)player.getVelX(), (int)player.getVelY()), debugPanel.x + GUI_MARGIN, debugPanel.y + GUI_MARGIN, GUI_MARGIN, GRAY);
         DrawText(TextFormat("Player Position: [%i , %i]",
-                            (int)player.getPos().x, (int)player.getPos().y), 10, 30, 20, GRAY);
-        DrawText(TextFormat("FPS: %i", GetFPS()), 10, 50, 20, GRAY);
-        DrawText(TextFormat("World items size: [%i]",
-                            world.getItems().size()), 10, 70, 20, GRAY);
+                            (int)player.getPos().x, (int)player.getPos().y), debugPanel.x + GUI_MARGIN, debugPanel.y + 3*GUI_MARGIN, GUI_MARGIN, GRAY);
+        DrawText(TextFormat("FPS: %i", GetFPS()), debugPanel.x + GUI_MARGIN, debugPanel.y + 5*GUI_MARGIN, GUI_MARGIN, GRAY);
+        DrawText(TextFormat("World items size: %i",
+                            world.getItems().size()), debugPanel.x + GUI_MARGIN, debugPanel.y + 7*GUI_MARGIN, GUI_MARGIN, GRAY);
+
+        gui.draw(); // draw gui elements
 
         EndTextureMode();
 

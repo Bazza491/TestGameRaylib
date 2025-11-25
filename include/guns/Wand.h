@@ -9,7 +9,10 @@ class Wand {
 private:
     CastContext baseCtx;
     ProjectileStats baseProj;
-    int spellsPCast = 1; // how many spells are cast per cast action
+
+    float maxMana = 80.0f;
+    float currentMana = 40.0f;
+    float manaChargeSpeed = 10.0f;
 
     Texture2D texture;
     SpellStorage spells;
@@ -36,5 +39,7 @@ public:
     float getRechargeTime() const;
     int getCapacity() const;
     void setCapacity(int size);
-    int getSpellsPCast() const { return spellsPCast; }
+    int getSpellsPCast() const { return baseCtx.remainingDraw; }
+    float getMana() const { return currentMana; }
+    float getMaxMana() const { return maxMana; }
 };
