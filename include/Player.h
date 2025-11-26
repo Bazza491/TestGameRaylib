@@ -54,6 +54,8 @@ public:
     [[nodiscard]] int getSelectedWandSlot() const { return selectedWandSlot; }
     [[nodiscard]] const std::array<std::unique_ptr<Wand>, 4>& getWandSlots() const { return wands; }
 
+    bool selectWandSlot(int index);
+    bool cycleWandSlot(int delta);
     bool swapWands(int first, int second);
 
 };

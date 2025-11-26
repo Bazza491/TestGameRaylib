@@ -191,7 +191,7 @@ int main() {
         // Update player.
         player.update(deltaTime, mouseWorldPos);
 
-        gui.update(deltaTime); // update gui elements
+        gui.update(deltaTime, virtualMouse); // update gui elements
         world.update(); // update world items
 
 

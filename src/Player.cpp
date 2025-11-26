@@ -38,7 +38,7 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
         //TODO: Finalise starting wand stats
         CastContext castContext = {
                 .remainingCapacity = 10,
-                .remainingDraw = 1,
+                .remainingDraw = 5,
                 .shuffle = false,
                 .castDelay = 0.2f,
                 .rechargeTime = 2.0f,
@@ -70,15 +70,15 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
         Image wandImage = GenImageColor(64, 16, placeholderColor); // 32x8 rectangle
         Texture2D wandTexture = LoadTextureFromImage(wandImage);
         UnloadImage(wandImage); // free the CPU-side image
-
         wands[i] = std::make_unique<Wand>(castContext, projStats, wandTexture);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBoltTrigger>(), 0);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 1);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 2);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<DrawTwo>(), 3);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 4);
-        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 5);
+        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBoltTrigger>(), 0);
+        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 1);
+        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 2);
+        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 3);
+        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 4);
+        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 5);
     }
+
     selectedWandSlot = 0;
     //endregion
 }
@@ -127,6 +127,16 @@ void Player::setState(PlayerState newState) {
 }
 
 void Player::update(float delta, Vector2 mouseWorldPos) {
+    int wheelMove = (int)GetMouseWheelMove();
+    if (wheelMove != 0) {
+        cycleWandSlot(-wheelMove);
+    }
+
+    if (IsKeyPressed(KEY_ONE)) selectWandSlot(0);
+    if (IsKeyPressed(KEY_TWO)) selectWandSlot(1);
+    if (IsKeyPressed(KEY_THREE)) selectWandSlot(2);
+    if (IsKeyPressed(KEY_FOUR)) selectWandSlot(3);
+
     float move = IsKeyDown(KEY_A) && IsKeyDown(KEY_D) ? 0.0f :
                  IsKeyDown(KEY_A) ? -1.0f :
                  IsKeyDown(KEY_D) ?  1.0f : 0.0f;
@@ -295,6 +305,20 @@ float Player::getMaxMana() const {
 float Player::getMana() const {
     float r = wands[selectedWandSlot]->getMana();
     return r;
+}
+
+bool Player::selectWandSlot(int index) {
+    if (index < 0 || index >= (int)wands.size()) return false;
+    selectedWandSlot = index;
+    return true;
+}
+
+bool Player::cycleWandSlot(int delta) {
+    if (delta == 0) return false;
+    int size = (int)wands.size();
+    int offset = delta % size;
+    selectedWandSlot = (selectedWandSlot + size + offset) % size;
+    return true;
 }
 
 bool Player::swapWands(int first, int second) {

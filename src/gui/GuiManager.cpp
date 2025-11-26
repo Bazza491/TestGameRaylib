@@ -16,9 +16,9 @@ GuiManager::GuiManager() = default;
 GuiManager::~GuiManager() = default;
 
 
-void GuiManager::update(float dt) {
+void GuiManager::update(float dt, Vector2 virtualMousePos) {
     for (auto& item : items)
-        if (item->visible) item->update(dt);
+        if (item->visible) item->update(dt, virtualMousePos);
 }
 
 void GuiManager::draw() const {
@@ -26,25 +26,11 @@ void GuiManager::draw() const {
         if (item->visible) item->draw();
 
 // ============================================================================
-// GUI LAYOUT DEBUG VISUALIZER  (paste directly inside GuiManager::draw())
+// GUI LAYOUT DEBUG VISUALIZER (FOR PLANNING PURPOSES ONLY, DO NOT REMOVE GUI ELEMENTS UNTIL THEY HAVE BEEN CREATED)
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// 1. WAND SLOTS (Top-left)
-// ---------------------------------------------------------------------------
-    Rectangle wandSlots[4];
-    for (int i = 0; i < 4; i++) {
-        wandSlots[i] = {
-                GUI_MARGIN + i * (WAND_SLOT_SIZE + WAND_SLOT_SPACING),
-                GUI_MARGIN,
-                WAND_SLOT_SIZE,
-                WAND_SLOT_SIZE
-        };
-        DrawRectangleLinesEx(wandSlots[i], 2, WHITE);
-    }
-
-// ---------------------------------------------------------------------------
-// 2. WAND PREVIEW BOX (Middle-left)
+// WAND PREVIEW BOX (Middle-left)
 // ---------------------------------------------------------------------------
     Rectangle wandPreview = {
             GUI_MARGIN,
@@ -55,7 +41,7 @@ void GuiManager::draw() const {
     DrawRectangleLinesEx(wandPreview, 2, WHITE);
 
 // ---------------------------------------------------------------------------
-// 3. SPELL SLOTS (Inside wand preview)
+// SPELL SLOTS (Inside wand preview)
 // ---------------------------------------------------------------------------
     Rectangle spellSlots[7];
     for (int i = 0; i < 7; i++) {
@@ -69,7 +55,7 @@ void GuiManager::draw() const {
     }
 
 // ---------------------------------------------------------------------------
-// 4. DEBUG PANEL (Bottom-left)
+// DEBUG PANEL (Bottom-left)
 // ---------------------------------------------------------------------------
 
     Rectangle debugPanel = {
@@ -83,7 +69,7 @@ void GuiManager::draw() const {
 // ---------------------------------------------------------------------------
 // OPTIONAL LABELS FOR VISUAL DEBUGGING
 // ---------------------------------------------------------------------------
-    DrawText("Wands", wandSlots[0].x, wandSlots[0].y + WAND_SLOT_SIZE + 5, 20, WHITE);
+
     DrawText("Zoomed Wand View (when inventory open)", wandPreview.x + 10, wandPreview.y + 10, 20, WHITE);
 
 // ============================================================================

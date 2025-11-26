@@ -7,7 +7,7 @@ ManaBar::ManaBar(const Player* player)
         displayValue = (float)player->getMana();
 }
 
-void ManaBar::update(float dt) {
+void ManaBar::update(float dt, Vector2 virtualMousePos) {
     if (!player) return;
 
     float target = (float)player->getMana();

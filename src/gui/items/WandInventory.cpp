@@ -5,17 +5,18 @@ WandInventory::WandInventory(Player* player)
     : player(player)
 {}
 
-void WandInventory::update(float dt) {
+void WandInventory::update(float dt, Vector2 virtualMousePos) {
     (void)dt;
     if (!player) return;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = virtualMousePos;
 
     if (!dragging && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         for (int i = 0; i < (int)player->getWandSlots().size(); ++i) {
             Rectangle slot = getSlotRect(i);
             if (CheckCollisionPointRec(mouse, slot)) {
-                beginSlotDrag(i);
+                player->selectWandSlot(i);
+                beginSlotDrag(i, mouse);
                 break;
             }
         }
@@ -39,8 +40,8 @@ void WandInventory::update(float dt) {
 
         dragging = false;
         draggedSlot = -1;
-        dragOffset = {0.0f, 0.0f};
     }
+    dragPos = virtualMousePos;
 }
 
 Rectangle WandInventory::getSlotRect(int index) const {
@@ -99,7 +100,7 @@ void WandInventory::draw() const {
     drawDraggedWand();
 }
 
-void WandInventory::beginSlotDrag(int slotIndex) {
+void WandInventory::beginSlotDrag(int slotIndex, Vector2 mousePos) {
     if (!player) return;
     const auto& wands = player->getWandSlots();
     if (slotIndex < 0 || slotIndex >= (int)wands.size()) return;
@@ -108,9 +109,8 @@ void WandInventory::beginSlotDrag(int slotIndex) {
     dragging = true;
     draggedSlot = slotIndex;
 
-    Vector2 mouse = GetMousePosition();
     Rectangle rect = getSlotRect(slotIndex);
-    dragOffset = {mouse.x - rect.x, mouse.y - rect.y};
+    dragPos = {mousePos.x - rect.x, mousePos.y - rect.y};
 }
 
 void WandInventory::dropOnSlot(int fromSlot, int toSlot) {
@@ -136,14 +136,12 @@ void WandInventory::drawDraggedWand() const {
     float drawW = tex.width * scale;
     float drawH = tex.height * scale;
 
-    Vector2 mouse = GetMousePosition();
-    Vector2 topLeft = {mouse.x - dragOffset.x, mouse.y - dragOffset.y};
     Rectangle dest = {
-        topLeft.x + (WAND_SLOT_SIZE - drawW) * 0.5f,
-        topLeft.y + (WAND_SLOT_SIZE - drawH) * 0.5f,
+        dragPos.x /*+ (WAND_SLOT_SIZE - drawW) * 0.5f*/,
+        dragPos.y /*+ (WAND_SLOT_SIZE - drawH) * 0.5f*/,
         drawW,
         drawH
     };
 
-    DrawTexturePro(tex, {0, 0, (float)tex.width, (float)tex.height}, dest, {0, 0}, 0.0f, WHITE);
+    DrawTexturePro(tex, {0, 0, (float)tex.width, (float)tex.height}, dest, {drawW * 0.5f, drawH * 0.5f}, 0.0f, WHITE);
 }

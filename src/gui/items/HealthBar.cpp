@@ -7,7 +7,7 @@ HealthBar::HealthBar(const Player* player)
         displayValue = (float)player->getHealth();
 }
 
-void HealthBar::update(float dt) {
+void HealthBar::update(float dt, Vector2 virtualMousePos) {
     if (!player) return;
 
     float target = (float)player->getHealth();

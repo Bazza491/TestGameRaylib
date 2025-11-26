@@ -7,7 +7,7 @@ StaminaBar::StaminaBar(const Player* player)
         displayValue = (float)player->getStamina();
 }
 
-void StaminaBar::update(float dt) {
+void StaminaBar::update(float dt, Vector2 virtualMousePos) {
     if (!player) return;
 
     float target = (float)player->getStamina();

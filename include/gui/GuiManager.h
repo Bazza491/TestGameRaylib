@@ -24,6 +24,6 @@ public:
     GuiManager& operator=(const GuiManager&) = delete; // no assignment
     static GuiManager& getInstance();            // singleton accessor
 
-    void update(float dt);
+    void update(float dt, Vector2 virtualMousePos);
     void draw() const;
 };

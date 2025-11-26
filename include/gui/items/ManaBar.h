@@ -19,6 +19,6 @@ private:
 public:
     explicit ManaBar(const Player* player);
 
-    void update(float dt) override;
+    void update(float dt, Vector2 virtualMousePos) override;
     void draw()  const override;
 };
