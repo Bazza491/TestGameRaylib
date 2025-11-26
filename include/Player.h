@@ -53,6 +53,8 @@ public:
     [[nodiscard]] float getMana() const;
     [[nodiscard]] int getSelectedWandSlot() const { return selectedWandSlot; }
     [[nodiscard]] const std::array<std::unique_ptr<Wand>, 4>& getWandSlots() const { return wands; }
+    [[nodiscard]] SpellStorage& getSpellInventory() { return spells; }
+    [[nodiscard]] const SpellStorage& getSpellInventory() const { return spells; }
 
     bool selectWandSlot(int index);
     bool cycleWandSlot(int delta);

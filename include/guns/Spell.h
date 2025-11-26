@@ -33,6 +33,9 @@ public:
     Spell() : name("Empty Slot") {}
     virtual ~Spell() = default;
 
+    [[nodiscard]] const std::string& getName() const { return name; }
+    [[nodiscard]] spellType getType() const { return type; }
+
 
     // NOTE:
     // - spells: full list of spells in the wand
