@@ -4,6 +4,8 @@
 #include "gui/GuiConstants.h"
 #include "Player.h"
 
+class Spell;
+
 class SpellInventory : public GuiItem {
 private:
     Player* player = nullptr;
@@ -11,6 +13,15 @@ private:
     int draggedSlot = -1;
     Vector2 dragPos{0.0f, 0.0f};
 
+    struct Layout {
+        float startX = GUI_MARGIN;
+        float startY = GUI_MARGIN;
+        float slotSize = SPELL_SLOT_SIZE;
+        float spacing = SPELL_SLOT_SPACING;
+        float totalWidth = 0.0f;
+    };
+
+    [[nodiscard]] Layout computeLayout() const;
     [[nodiscard]] Rectangle getSlotRect(int index) const;
     [[nodiscard]] Color getSpellColor(const Spell* spell) const;
     void drawSpellInSlot(int index, const Rectangle& rect) const;
