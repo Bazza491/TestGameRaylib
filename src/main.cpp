@@ -14,6 +14,7 @@
 #include "gui/items/ManaBar.h"
 #include "gui/items/StaminaBar.h"
 #include "gui/items/WandInventory.h"
+#include "gui/items/SpellInventory.h"
 
 //#include <iostream>
 //#include <string>
@@ -89,6 +90,7 @@ int main() {
     //region gui elements (gui singleton)
     GuiManager& gui = GuiManager::getInstance();
     gui.add<WandInventory>(&player);
+    gui.add<SpellInventory>(&player);
     gui.add<HealthBar>(&player);
     gui.add<ManaBar>(&player);
     gui.add<StaminaBar>(&player);

@@ -16,7 +16,7 @@ const int HAND_OFFSET_X = 40; // offset right/50
 const int HAND_OFFSET_Y = 35; // offset down/100
 
 Player::Player(Texture2D spriteSheet) : Player(spriteSheet, {0, 0}) {}
-Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(16), velocity({0, 0}) {
+Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(16, false), velocity({0, 0}) {
     hitBox = {pos.x, pos.y, 50.0f, 100.0f};
     selectedWandSlot = 0;
 
@@ -78,6 +78,10 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
         wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 4);
         wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 5);
     }
+
+    // Example starting spells for the inventory (kept empty by default)
+    // spells.insertSpell(std::make_unique<SparkBolt>(), 0);
+    // spells.insertSpell(std::make_unique<DrawTwo>(), 1);
 
     selectedWandSlot = 0;
     //endregion
