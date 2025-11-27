@@ -15,8 +15,8 @@ constexpr Color WAND_SLOT_OUTLINE_COLOR     = {255, 255, 255, 255};
 constexpr Color WAND_SLOT_SELECTED_COLOR    = {120, 170, 255, 255};
 constexpr Color WAND_SLOT_OCCUPIED_COLOR    = {90, 90, 90, 255};
 
-constexpr float SPELL_SLOT_SIZE     = 60.0f;
-constexpr float SPELL_SLOT_SPACING  = 10.0f;
+constexpr float SPELL_SLOT_SIZE     = 72.0f;
+constexpr float SPELL_SLOT_SPACING  = 12.0f;
 constexpr float SPELL_SLOT_BORDER   = 2.0f;
 constexpr Color SPELL_SLOT_COLOR            = {30, 30, 30, 255};
 constexpr Color SPELL_SLOT_OUTLINE_COLOR    = {230, 230, 230, 255};

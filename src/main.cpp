@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include "raylib.h"
 #include "raymath.h"
@@ -98,7 +99,6 @@ int main() {
     gui.add<StaminaBar>(&player);
     HeldWandGui* heldGui = gui.add<HeldWandGui>(&player);
 
-    wandGui->visible = false;
     spellGui->visible = false;
     heldGui->visible = false;
     //endregion
@@ -170,6 +170,8 @@ int main() {
     // Main game loop
     //--------------------------------------------------------------------------------------
     bool inventoryOpen = false;
+    float inventoryCastBuffer = 0.0f;
+    const float INVENTORY_CAST_BUFFER = 0.2f;
 
     while (!WindowShouldClose()) { // Detect window close button or ESC key
         if (closed) break;
@@ -201,12 +203,16 @@ int main() {
 
         if (IsKeyPressed(KEY_TAB)) {
             inventoryOpen = !inventoryOpen;
+            inventoryCastBuffer = INVENTORY_CAST_BUFFER;
             if (!inventoryOpen) {
                 EndSpellDrag();
             }
-            wandGui->visible = inventoryOpen;
             spellGui->visible = inventoryOpen;
             heldGui->visible = inventoryOpen;
+        }
+
+        if (inventoryCastBuffer > 0.0f) {
+            inventoryCastBuffer = std::max(0.0f, inventoryCastBuffer - deltaTime);
         }
 
         // Update player.
@@ -217,7 +223,7 @@ int main() {
 
 
         // Cast spell on left mouse button press
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !inventoryOpen && inventoryCastBuffer <= 0.0f) {
             player.cast(); //TODO Cast cooldown managed by Wand.h
         }
 

@@ -2,6 +2,7 @@
 
 #include "guns/Spell.h"
 #include <algorithm>
+#include <cmath>
 #include <string>
 
 SpellInventory::SpellInventory(Player* player)
@@ -39,9 +40,9 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
 
         if (targetSlot >= 0) {
             dropOnSlot(drag.slot, targetSlot);
+            EndSpellDrag();
         }
-
-        EndSpellDrag();
+        // If not dropped on this inventory, let other GUIs resolve the release.
     }
 }
 
@@ -55,37 +56,38 @@ SpellInventory::Layout SpellInventory::computeLayout() const {
     layout.slotSize = SPELL_SLOT_SIZE;
     layout.spacing = SPELL_SLOT_SPACING;
 
-    float baseWidth = layout.slotSize * totalSlots + layout.spacing * (totalSlots - 1);
+    const int columns = 8;
+    const int rows = 2;
+
+    layout.totalWidth = columns * layout.slotSize + layout.spacing * (columns - 1);
 
     float wandCount = (float) player->getWandSlots().size();
     float wandWidth = (wandCount > 0)
                       ? wandCount * (WAND_SLOT_SIZE + WAND_SLOT_SPACING) - WAND_SLOT_SPACING
                       : 0.0f;
 
-    float minStartX = GUI_MARGIN + wandWidth + GUI_MARGIN;
-    float maxEndX = SCREEN_W - BAR_WIDTH - GUI_MARGIN;
-    float availableAfterWands = maxEndX - minStartX;
+    layout.startX = GUI_MARGIN + wandWidth + GUI_MARGIN;
+    layout.startY = GUI_MARGIN + WAND_SLOT_SIZE + GUI_MARGIN;
 
-    if (availableAfterWands > 0 && baseWidth > availableAfterWands) {
-        float scale = availableAfterWands / baseWidth;
-        layout.slotSize *= scale;
-        layout.spacing *= scale;
-        baseWidth = layout.slotSize * totalSlots + layout.spacing * (totalSlots - 1);
+    // Center if there's extra space to improve readability.
+    float maxEndX = SCREEN_W - BAR_WIDTH - GUI_MARGIN;
+    float available = maxEndX - layout.startX;
+    if (available > layout.totalWidth) {
+        layout.startX += (available - layout.totalWidth) * 0.5f;
     }
 
-    layout.totalWidth = baseWidth;
-
-    layout.startX = minStartX;
-    layout.startY = GUI_MARGIN;
+    (void)rows; // rows reserved for future dynamic layouts
 
     return layout;
 }
 
 Rectangle SpellInventory::getSlotRect(int index) const {
     Layout layout = computeLayout();
+    int col = index % 8;
+    int row = index / 8;
     return {
-        layout.startX + index * (layout.slotSize + layout.spacing),
-        layout.startY,
+        layout.startX + col * (layout.slotSize + layout.spacing),
+        layout.startY + row * (layout.slotSize + layout.spacing),
         layout.slotSize,
         layout.slotSize
     };
@@ -96,7 +98,7 @@ void SpellInventory::drawSpellInSlot(int index, const Rectangle& rect) const {
     if (!spell) return;
     if (IsDraggingSpellFrom(GetSpellDragState(), &player->getSpellInventory(), index)) return;
 
-    DrawSpellLabelFitted(spell, rect, 14, GRAY);
+    DrawSpellLabelFitted(spell, rect, 16, GRAY);
 }
 
 void SpellInventory::draw() const {
@@ -125,8 +127,9 @@ void SpellInventory::draw() const {
         }
     }
 
+    int rows = (int)std::ceil((float)totalSlots / 8.0f);
     float labelX = layout.startX;
-    float labelY = layout.startY + layout.slotSize + 6.0f;
+    float labelY = layout.startY + rows * (layout.slotSize + layout.spacing) + 6.0f;
     DrawText("Spells", (int)labelX, (int)labelY, 20, GRAY);
 
     DrawDraggedSpellSprite(GetSpellDragState());

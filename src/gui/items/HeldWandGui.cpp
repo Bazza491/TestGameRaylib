@@ -113,7 +113,7 @@ void HeldWandGui::drawSpellSlots(const PanelLayout& layout, SpellStorage& storag
         DrawRectangleRec(rect, fill);
         DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, SPELL_SLOT_OUTLINE_COLOR);
         if (spell && !hiddenByDrag) {
-            DrawSpellLabelFitted(spell, rect, 14, GRAY);
+            DrawSpellLabelFitted(spell, rect, 16, GRAY);
         }
     }
 }
@@ -244,9 +244,14 @@ void HeldWandGui::drawPreviewSpells(const Rectangle& area, SpellStorage& storage
 }
 
 void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage) const {
+    float previewX = layout.panel.x + layout.panel.width + HELD_WAND_PREVIEW_OFFSET_X;
+    float previewY = layout.panel.y;
+    previewX = std::min(previewX, SCREEN_W - HELD_WAND_PREVIEW_WIDTH - GUI_MARGIN);
+    previewX = std::max(previewX, layout.panel.x + HELD_WAND_PANEL_PADDING);
+
     Rectangle preview = {
-        layout.panel.x + layout.panel.width + HELD_WAND_PREVIEW_OFFSET_X,
-        layout.panel.y,
+        previewX,
+        previewY,
         HELD_WAND_PREVIEW_WIDTH,
         HELD_WAND_PREVIEW_HEIGHT
     };
