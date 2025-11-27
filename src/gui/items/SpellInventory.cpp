@@ -67,14 +67,7 @@ SpellInventory::Layout SpellInventory::computeLayout() const {
                       : 0.0f;
 
     layout.startX = GUI_MARGIN + wandWidth + GUI_MARGIN;
-    layout.startY = GUI_MARGIN + WAND_SLOT_SIZE + GUI_MARGIN;
-
-    // Center if there's extra space to improve readability.
-    float maxEndX = SCREEN_W - BAR_WIDTH - GUI_MARGIN;
-    float available = maxEndX - layout.startX;
-    if (available > layout.totalWidth) {
-        layout.startX += (available - layout.totalWidth) * 0.5f;
-    }
+    layout.startY = GUI_MARGIN;
 
     (void)rows; // rows reserved for future dynamic layouts
 
