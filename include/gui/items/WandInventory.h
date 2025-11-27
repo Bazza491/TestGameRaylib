@@ -26,3 +26,5 @@ public:
     void dropOnSlot(int fromSlot, int toSlot);
     void dropToWorld(int fromSlot);
 };
+
+bool IsAnyWandDragging();

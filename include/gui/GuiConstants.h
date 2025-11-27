@@ -39,13 +39,14 @@ constexpr Color HELD_WAND_PANEL_OUTLINE   = {255, 255, 255, 255};
 constexpr int   HELD_WAND_FONT_SIZE       = 18;
 constexpr int   HELD_WAND_PREVIEW_FONT_SIZE = 16;
 constexpr Color HELD_WAND_FONT_COLOR      = {255, 255, 255, 255};
-constexpr float HELD_WAND_PREVIEW_OFFSET_X = 20.0f;
+constexpr float HELD_WAND_PREVIEW_EDGE_GAP = 12.0f;
 constexpr float HELD_WAND_PREVIEW_WIDTH   = 420.0f;
 constexpr float HELD_WAND_PREVIEW_HEIGHT  = 260.0f;
 constexpr float HELD_WAND_PREVIEW_SPELL_GAP = 10.0f;
 constexpr float HELD_WAND_PREVIEW_SLOT_SCALE = 0.8f;
 constexpr int   HELD_WAND_PREVIEW_TITLE_SIZE = 22;
 constexpr float HELD_WAND_PREVIEW_NAME_GAP = 10.0f;
+constexpr float HELD_WAND_PREVIEW_FADE_SPEED = 6.0f;
 
 // ---------------------------
 // Window size (temporary)

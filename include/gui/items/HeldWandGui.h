@@ -10,7 +10,8 @@
 class HeldWandGui : public GuiItem {
 private:
     Player* player = nullptr;
-    Vector2 lastMouse{0.0f, 0.0f};
+    bool previewAllowed = false;
+    float previewAlpha = 0.0f;
 
     struct PanelLayout {
         Rectangle panel{0, 0, 0, 0};
@@ -27,8 +28,8 @@ private:
     void drawPrimaryStats(const PanelLayout& layout, const Wand& wand) const;
     void drawSpellSlots(const PanelLayout& layout, SpellStorage& storage) const;
     void drawBackground(const PanelLayout& layout) const;
-    void drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage) const;
-    void drawPreviewSpells(const Rectangle& area, SpellStorage& storage, float slotSize) const;
+    void drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage, float alpha) const;
+    void drawPreviewSpells(const Rectangle& area, SpellStorage& storage, float slotSize, float alpha) const;
     Rectangle getSlotRect(const PanelLayout& layout, int index) const;
     [[nodiscard]] int slotAtPosition(const PanelLayout& layout, Vector2 pos) const;
 

@@ -1,6 +1,8 @@
 #include "gui/items/WandInventory.h"
 #include <algorithm>
 
+static bool g_anyWandDragging = false;
+
 WandInventory::WandInventory(Player* player)
     : player(player)
 {}
@@ -39,6 +41,7 @@ void WandInventory::update(float dt, Vector2 virtualMousePos) {
         }
 
         dragging = false;
+        g_anyWandDragging = false;
         draggedSlot = -1;
     }
     dragPos = virtualMousePos;
@@ -107,6 +110,7 @@ void WandInventory::beginSlotDrag(int slotIndex, Vector2 mousePos) {
     if (!wands[slotIndex]) return;
 
     dragging = true;
+    g_anyWandDragging = true;
     draggedSlot = slotIndex;
 
     Rectangle rect = getSlotRect(slotIndex);
@@ -144,4 +148,8 @@ void WandInventory::drawDraggedWand() const {
     };
 
     DrawTexturePro(tex, {0, 0, (float)tex.width, (float)tex.height}, dest, {drawW * 0.5f, drawH * 0.5f}, 0.0f, WHITE);
+}
+
+bool IsAnyWandDragging() {
+    return g_anyWandDragging;
 }
