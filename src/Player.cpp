@@ -310,6 +310,12 @@ float Player::getMana() const {
     float r = wands[selectedWandSlot]->getMana();
     return r;
 }
+Wand* Player::getSelectedWand() {
+    return wands[selectedWandSlot].get();
+}
+const Wand* Player::getSelectedWand() const {
+    return wands[selectedWandSlot].get();
+}
 
 bool Player::selectWandSlot(int index) {
     if (index < 0 || index >= (int)wands.size()) return false;

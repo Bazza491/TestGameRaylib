@@ -2,6 +2,7 @@
 
 #include "gui/GuiItem.h"
 #include "gui/GuiConstants.h"
+#include "gui/SpellSlotUtils.h"
 #include "Player.h"
 
 class Spell;
@@ -9,10 +10,6 @@ class Spell;
 class SpellInventory : public GuiItem {
 private:
     Player* player = nullptr;
-    bool dragging = false;
-    int draggedSlot = -1;
-    Vector2 dragPos{0.0f, 0.0f};
-
     struct Layout {
         float startX = GUI_MARGIN;
         float startY = GUI_MARGIN;

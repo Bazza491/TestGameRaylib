@@ -14,7 +14,10 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
     Vector2 mouse = virtualMousePos;
     int totalSlots = player->getSpellInventory().getCapacity();
 
-    if (!dragging && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    SpellDragState& drag = GetSpellDragState();
+    UpdateDragMouse(virtualMousePos);
+
+    if (!drag.active && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         for (int i = 0; i < totalSlots; ++i) {
             Rectangle slot = getSlotRect(i);
             if (CheckCollisionPointRec(mouse, slot) && player->getSpellInventory().getSpell(i)) {
@@ -24,7 +27,7 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
         }
     }
 
-    if (dragging && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+    if (drag.active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         int targetSlot = -1;
         for (int i = 0; i < totalSlots; ++i) {
             Rectangle slot = getSlotRect(i);
@@ -35,16 +38,11 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
         }
 
         if (targetSlot >= 0) {
-            dropOnSlot(draggedSlot, targetSlot);
-        } else {
-            dropToWorld(draggedSlot);
+            dropOnSlot(drag.slot, targetSlot);
         }
 
-        dragging = false;
-        draggedSlot = -1;
+        EndSpellDrag();
     }
-
-    dragPos = virtualMousePos;
 }
 
 SpellInventory::Layout SpellInventory::computeLayout() const {
@@ -93,36 +91,12 @@ Rectangle SpellInventory::getSlotRect(int index) const {
     };
 }
 
-Color SpellInventory::getSpellColor(const Spell* spell) const {
-    if (!spell) return SPELL_SLOT_COLOR;
-
-    switch (spell->getType()) {
-        case PROJECTILE:         return ORANGE;
-        case STATIC_PROJECTILE:  return SKYBLUE;
-        case MODIFIER:           return PURPLE;
-        case DRAW_MANY:          return GOLD;
-        case PASSIVE:            return GREEN;
-        case MATERIAL:           return BROWN;
-        case UTILITY:            return DARKGREEN;
-        case OTHER:
-        default:                 return GRAY;
-    }
-}
-
 void SpellInventory::drawSpellInSlot(int index, const Rectangle& rect) const {
     const Spell* spell = player->getSpellInventory().getSpell(index);
     if (!spell) return;
-    if (dragging && draggedSlot == index) return;
+    if (IsDraggingSpellFrom(GetSpellDragState(), &player->getSpellInventory(), index)) return;
 
-    int fontSize = 14;
-    std::string label = spell->getName();
-    if ((int)label.size() > 12) {
-        label = label.substr(0, 12) + "...";
-    }
-    int textWidth = MeasureText(label.c_str(), fontSize);
-    float textX = rect.x + (rect.width - textWidth) * 0.5f;
-    float textY = rect.y + rect.height - fontSize - 4.0f;
-    DrawText(label.c_str(), (int)textX, (int)textY, fontSize, GRAY);
+    DrawSpellLabelFitted(spell, rect, 14, GRAY);
 }
 
 void SpellInventory::draw() const {
@@ -135,11 +109,11 @@ void SpellInventory::draw() const {
     for (int i = 0; i < totalSlots; ++i) {
         Rectangle rect = getSlotRect(i);
         const Spell* spell = storage.getSpell(i);
-        bool hiddenByDrag = dragging && draggedSlot == i;
+        bool hiddenByDrag = IsDraggingSpellFrom(GetSpellDragState(), &player->getSpellInventory(), i);
 
         Color fill = SPELL_SLOT_COLOR;
         if (spell && !hiddenByDrag) {
-            fill = getSpellColor(spell);
+            fill = GetSpellColor(spell);
         } else if (spell) {
             fill = SPELL_SLOT_OCCUPIED_COLOR;
         }
@@ -155,7 +129,7 @@ void SpellInventory::draw() const {
     float labelY = layout.startY + layout.slotSize + 6.0f;
     DrawText("Spells", (int)labelX, (int)labelY, 20, GRAY);
 
-    drawDraggedSpell();
+    DrawDraggedSpellSprite(GetSpellDragState());
 }
 
 void SpellInventory::beginSlotDrag(int slotIndex, Vector2 mousePos) {
@@ -164,16 +138,19 @@ void SpellInventory::beginSlotDrag(int slotIndex, Vector2 mousePos) {
     if (slotIndex < 0 || slotIndex >= storage.getCapacity()) return;
     if (!storage.getSpell(slotIndex)) return;
 
-    dragging = true;
-    draggedSlot = slotIndex;
-
     Rectangle rect = getSlotRect(slotIndex);
-    dragPos = {mousePos.x - rect.x, mousePos.y - rect.y};
+    StartSpellDrag(&storage, slotIndex, rect, mousePos, computeLayout().slotSize);
 }
 
 void SpellInventory::dropOnSlot(int fromSlot, int toSlot) {
     if (!player) return;
-    player->getSpellInventory().swapSpells(fromSlot, toSlot);
+    SpellStorage& storage = player->getSpellInventory();
+    SpellDragState& drag = GetSpellDragState();
+    if (drag.source == &storage) {
+        storage.swapSpells(fromSlot, toSlot);
+    } else if (drag.source) {
+        drag.source->swapSpells(storage, fromSlot, toSlot);
+    }
 }
 
 void SpellInventory::dropToWorld(int fromSlot) {
@@ -181,31 +158,5 @@ void SpellInventory::dropToWorld(int fromSlot) {
 }
 
 void SpellInventory::drawDraggedSpell() const {
-    if (!dragging || draggedSlot < 0 || !player) return;
-
-    const Spell* spell = player->getSpellInventory().getSpell(draggedSlot);
-    if (!spell) return;
-
-    Layout layout = computeLayout();
-
-    Rectangle rect = {
-        dragPos.x - layout.slotSize * 0.5f,
-        dragPos.y - layout.slotSize * 0.5f,
-        layout.slotSize,
-        layout.slotSize
-    };
-
-    Color fill = getSpellColor(spell);
-    DrawRectangleRec(rect, fill);
-    DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, SPELL_SLOT_OUTLINE_COLOR);
-
-    int fontSize = 14;
-    std::string label = spell->getName();
-    if ((int)label.size() > 12) {
-        label = label.substr(0, 12) + "...";
-    }
-    int textWidth = MeasureText(label.c_str(), fontSize);
-    float textX = rect.x + (rect.width - textWidth) * 0.5f;
-    float textY = rect.y + rect.height - fontSize - 4.0f;
-    DrawText(label.c_str(), (int)textX, (int)textY, fontSize, GRAY);
+    DrawDraggedSpellSprite(GetSpellDragState());
 }

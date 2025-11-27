@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SpellStorage.h"
+#include <string>
 
 class SpellTransform;
 
@@ -13,6 +14,7 @@ private:
     float maxMana = 80.0f;
     float currentMana = 40.0f;
     float manaChargeSpeed = 10.0f;
+    std::string name = "Wand";
 
     Texture2D texture;
     SpellStorage spells;
@@ -33,13 +35,19 @@ public:
     const SpellStorage& getSpellStorage() const { return spells; }
 
     Texture2D getTexture() const { return texture; }
+    const std::string& getName() const { return name; }
+    void setName(const std::string& newName) { name = newName; }
 
+    const CastContext& getBaseContext() const { return baseCtx; }
+    const ProjectileStats& getBaseProjectile() const { return baseProj; }
     float getCastDelay() const;
     void setCastDelay(float delay);
     float getRechargeTime() const;
     int getCapacity() const;
     void setCapacity(int size);
     int getSpellsPCast() const { return baseCtx.remainingDraw; }
+    bool isShuffle() const { return baseCtx.shuffle; }
     float getMana() const { return currentMana; }
     float getMaxMana() const { return maxMana; }
+    float getManaChargeSpeed() const { return manaChargeSpeed; }
 };

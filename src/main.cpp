@@ -15,6 +15,8 @@
 #include "gui/items/StaminaBar.h"
 #include "gui/items/WandInventory.h"
 #include "gui/items/SpellInventory.h"
+#include "gui/items/HeldWandGui.h"
+#include "gui/SpellSlotUtils.h"
 
 //#include <iostream>
 //#include <string>
@@ -89,11 +91,16 @@ int main() {
 
     //region gui elements (gui singleton)
     GuiManager& gui = GuiManager::getInstance();
-    gui.add<WandInventory>(&player);
-    gui.add<SpellInventory>(&player);
+    WandInventory* wandGui = gui.add<WandInventory>(&player);
+    SpellInventory* spellGui = gui.add<SpellInventory>(&player);
     gui.add<HealthBar>(&player);
     gui.add<ManaBar>(&player);
     gui.add<StaminaBar>(&player);
+    HeldWandGui* heldGui = gui.add<HeldWandGui>(&player);
+
+    wandGui->visible = false;
+    spellGui->visible = false;
+    heldGui->visible = false;
     //endregion
 
     //region Camera
@@ -162,6 +169,8 @@ int main() {
     //--------------------------------------------------------------------------------------
     // Main game loop
     //--------------------------------------------------------------------------------------
+    bool inventoryOpen = false;
+
     while (!WindowShouldClose()) { // Detect window close button or ESC key
         if (closed) break;
         //----------------------------------------------------------------------------------
@@ -189,6 +198,16 @@ int main() {
         virtualMouse.y = (mouse.y - (GetScreenHeight() - (gameScreenHeight * scale)) * 0.5f) / scale;
         // Now convert virtual → world space
         Vector2 mouseWorldPos = GetScreenToWorld2D(virtualMouse, camera);
+
+        if (IsKeyPressed(KEY_TAB)) {
+            inventoryOpen = !inventoryOpen;
+            if (!inventoryOpen) {
+                EndSpellDrag();
+            }
+            wandGui->visible = inventoryOpen;
+            spellGui->visible = inventoryOpen;
+            heldGui->visible = inventoryOpen;
+        }
 
         // Update player.
         player.update(deltaTime, mouseWorldPos);
@@ -235,6 +254,10 @@ int main() {
         DrawText(TextFormat("FPS: %i", GetFPS()), debugPanel.x + GUI_MARGIN, debugPanel.y + 5*GUI_MARGIN, GUI_MARGIN, GRAY);
         DrawText(TextFormat("World items size: %i",
                             world.getItems().size()), debugPanel.x + GUI_MARGIN, debugPanel.y + 7*GUI_MARGIN, GUI_MARGIN, GRAY);
+
+        if (inventoryOpen) {
+            DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, INVENTORY_SHADE);
+        }
 
         gui.draw(); // draw gui elements
 
