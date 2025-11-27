@@ -71,17 +71,17 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
         Texture2D wandTexture = LoadTextureFromImage(wandImage);
         UnloadImage(wandImage); // free the CPU-side image
         wands[i] = std::make_unique<Wand>(castContext, projStats, wandTexture);
-        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBoltTrigger>(), 0);
-        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 1);
-        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 2);
-        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 3);
-        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 4);
-        wands[0]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 5);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBoltTrigger>(), 0);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 1);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 2);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 3);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 4);
+        wands[i]->getSpellStorage().insertSpell(std::make_unique<SparkBolt>(), 5);
     }
 
     // Example starting spells for the inventory (kept empty by default)
-    // spells.insertSpell(std::make_unique<SparkBolt>(), 0);
-    // spells.insertSpell(std::make_unique<DrawTwo>(), 1);
+     spells.insertSpell(std::make_unique<SparkBolt>(), 0);
+     spells.insertSpell(std::make_unique<DrawTwo>(), 1);
 
     selectedWandSlot = 0;
     //endregion

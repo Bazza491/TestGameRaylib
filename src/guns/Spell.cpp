@@ -118,7 +118,7 @@ void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& spells,
 
 DrawTwo::DrawTwo() {
     name = "Draw Two";
-    type = PROJECTILE;
+    type = DRAW_MANY;
     castMods = {
             .remainingDraw = 2,
             .castDelay = 0.04f,

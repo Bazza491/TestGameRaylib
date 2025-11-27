@@ -122,7 +122,7 @@ void SpellInventory::drawSpellInSlot(int index, const Rectangle& rect) const {
     int textWidth = MeasureText(label.c_str(), fontSize);
     float textX = rect.x + (rect.width - textWidth) * 0.5f;
     float textY = rect.y + rect.height - fontSize - 4.0f;
-    DrawText(label.c_str(), (int)textX, (int)textY, fontSize, WHITE);
+    DrawText(label.c_str(), (int)textX, (int)textY, fontSize, GRAY);
 }
 
 void SpellInventory::draw() const {
@@ -153,7 +153,7 @@ void SpellInventory::draw() const {
 
     float labelX = layout.startX;
     float labelY = layout.startY + layout.slotSize + 6.0f;
-    DrawText("Spells", (int)labelX, (int)labelY, 20, WHITE);
+    DrawText("Spells", (int)labelX, (int)labelY, 20, GRAY);
 
     drawDraggedSpell();
 }
@@ -207,5 +207,5 @@ void SpellInventory::drawDraggedSpell() const {
     int textWidth = MeasureText(label.c_str(), fontSize);
     float textX = rect.x + (rect.width - textWidth) * 0.5f;
     float textY = rect.y + rect.height - fontSize - 4.0f;
-    DrawText(label.c_str(), (int)textX, (int)textY, fontSize, WHITE);
+    DrawText(label.c_str(), (int)textX, (int)textY, fontSize, GRAY);
 }

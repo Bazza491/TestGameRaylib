@@ -16,7 +16,7 @@ protected:
     bool hasPhysics;
     bool dead = false;
     Color color;
-    Texture2D texture;
+    Texture2D texture; // TODO: use a texture manager and make this a texture ID or Texture2D&
     Vector2 velocity;
 public:
     EnvItem() {}
