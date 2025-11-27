@@ -230,7 +230,6 @@ void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, Spell
     const float padding = HELD_WAND_PANEL_PADDING;
     const float slotSize = SPELL_SLOT_SIZE * HELD_WAND_PREVIEW_SLOT_SCALE;
     const float spacing = SPELL_SLOT_SPACING;
-    const float textureAreaWidth = HELD_WAND_TEXTURE_SIZE;
     const int titleSize = HELD_WAND_PREVIEW_TITLE_SIZE;
     const int fontSize = HELD_WAND_PREVIEW_FONT_SIZE;
     const float lineHeight = fontSize + HELD_WAND_STATS_SPACING;
@@ -262,19 +261,29 @@ void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, Spell
         lines.emplace_back("size", TextFormat("x %s", formatFloat(proj.size).c_str()));
 
     float labelMax = 0.0f;
+    float valueMax = 0.0f;
     for (const auto& [label, value] : lines) {
         labelMax = std::max(labelMax, (float)MeasureText(label.c_str(), fontSize));
-        (void)value;
+        valueMax = std::max(valueMax, (float)MeasureText(value.c_str(), fontSize));
     }
 
     float nameHeight = (float)titleSize;
     float statsHeight = lines.size() * lineHeight;
     float statsBlockHeight = nameHeight + HELD_WAND_PREVIEW_NAME_GAP + statsHeight;
     Texture2D tex = wand.getTexture();
-    float rotatedHeight = (float)tex.width * (HELD_WAND_TEXTURE_SIZE / std::max(1.0f, (float)tex.height));
-    float topHeight = std::max(statsBlockHeight, rotatedHeight);
+    float maxTexW = HELD_WAND_TEXTURE_SIZE;
+    float maxTexH = HELD_WAND_TEXTURE_SIZE;
+    float texScale = std::min(maxTexW / std::max(1.0f, (float)tex.height), maxTexH / std::max(1.0f, (float)tex.width));
+    float texDrawW = tex.width * texScale;
+    float texDrawH = tex.height * texScale;
 
-    float slotsWidth = HELD_WAND_PREVIEW_WIDTH - 2 * padding;
+    float statsWidth = labelMax + HELD_WAND_VALUE_SPACING + valueMax;
+    float baseWidth = padding + statsWidth + HELD_WAND_TEXTURE_GAP + maxTexW + padding;
+    float previewWidth = std::max(HELD_WAND_PREVIEW_WIDTH, baseWidth);
+
+    float topHeight = std::max(statsBlockHeight, texDrawH);
+
+    float slotsWidth = previewWidth - 2 * padding;
     int columns = std::max(1, (int)std::floor((slotsWidth + spacing) / (slotSize + spacing)));
     int rows = std::max(1, (int)std::ceil((float)storage.getCapacity() / (float)columns));
     float slotsHeight = rows * (slotSize + spacing) - spacing;
@@ -282,25 +291,25 @@ void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, Spell
     float desiredHeight = padding + topHeight + HELD_WAND_PREVIEW_SPELL_GAP + slotsHeight + padding;
     float previewHeight = std::max(HELD_WAND_PREVIEW_HEIGHT, desiredHeight);
 
-    float previewX = SCREEN_W - GUI_MARGIN - HELD_WAND_PREVIEW_WIDTH - HELD_WAND_PREVIEW_EDGE_GAP;
+    float previewX = SCREEN_W - GUI_MARGIN - previewWidth - HELD_WAND_PREVIEW_EDGE_GAP;
     float previewY = SCREEN_H - GUI_MARGIN - previewHeight - HELD_WAND_PREVIEW_EDGE_GAP;
 
     previewX = std::max(GUI_MARGIN, previewX);
     previewY = std::max(GUI_MARGIN, previewY);
 
-    Rectangle preview = {previewX, previewY, HELD_WAND_PREVIEW_WIDTH, previewHeight};
+    Rectangle preview = {previewX, previewY, previewWidth, previewHeight};
 
     DrawRectangleRec(preview, Fade(HELD_WAND_PANEL_BG, alpha));
     DrawRectangleLinesEx(preview, HELD_WAND_PANEL_BORDER, Fade(HELD_WAND_PANEL_OUTLINE, alpha));
 
     Rectangle statsArea = {
-        preview.x,
+        preview.x + padding,
         preview.y + padding + (topHeight - statsBlockHeight) * 0.5f,
-        preview.width - textureAreaWidth - HELD_WAND_TEXTURE_GAP,
+        statsWidth,
         statsBlockHeight
     };
 
-    float labelX = statsArea.x + padding;
+    float labelX = statsArea.x;
     float valueX = labelX + labelMax + HELD_WAND_VALUE_SPACING;
     float textY = statsArea.y;
 
@@ -314,7 +323,7 @@ void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, Spell
     }
 
     float maxH = topHeight;
-    float maxW = textureAreaWidth;
+    float maxW = maxTexW;
     float scale = std::min(maxW / tex.height, maxH / tex.width);
     Rectangle dest = {
         statsArea.x + statsArea.width + HELD_WAND_TEXTURE_GAP + maxW * 0.5f,
@@ -325,10 +334,10 @@ void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, Spell
     DrawTexturePro(tex, {0, 0, (float)tex.width, (float)tex.height}, dest, {dest.width * 0.5f, dest.height * 0.5f}, -90.0f, Fade(WHITE, alpha));
 
     Rectangle spellsArea = {
-        preview.x,
+        preview.x + padding,
         preview.y + padding + topHeight + HELD_WAND_PREVIEW_SPELL_GAP,
-        preview.width,
-        preview.height - (padding + topHeight + HELD_WAND_PREVIEW_SPELL_GAP)
+        preview.width - 2 * padding,
+        preview.height - (padding + topHeight + HELD_WAND_PREVIEW_SPELL_GAP + padding)
     };
     drawPreviewSpells(spellsArea, storage, slotSize, alpha);
 }
