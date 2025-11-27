@@ -44,6 +44,8 @@ constexpr float HELD_WAND_PREVIEW_WIDTH   = 420.0f;
 constexpr float HELD_WAND_PREVIEW_HEIGHT  = 260.0f;
 constexpr float HELD_WAND_PREVIEW_SPELL_GAP = 10.0f;
 constexpr float HELD_WAND_PREVIEW_SLOT_SCALE = 0.8f;
+constexpr int   HELD_WAND_PREVIEW_TITLE_SIZE = 22;
+constexpr float HELD_WAND_PREVIEW_NAME_GAP = 10.0f;
 
 // ---------------------------
 // Window size (temporary)
