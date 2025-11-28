@@ -17,6 +17,7 @@ struct SpellDragState {
 class GuiSpellStorage : public GuiItem {
 public:
     struct Config {
+        Config() = default;
         float slotSize = SPELL_SLOT_SIZE;
         float padding = SPELL_SLOT_SPACING;
         float alpha = 1.0f;
@@ -35,7 +36,7 @@ private:
     [[nodiscard]] bool isDraggingSpellFrom(const SpellStorage* sourceStorage, int slot) const;
 
 public:
-    GuiSpellStorage(SpellStorage* storage, Config cfg = {});
+    GuiSpellStorage(SpellStorage* storage, Config cfg = Config{});
 
     void update(float dt, Vector2 virtualMousePos) override;
     void draw() const override;

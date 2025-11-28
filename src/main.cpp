@@ -307,8 +307,8 @@ int main() {
     CloseWindow();
     return 0;
 }
-extern float camVelX = 0;
-extern float camVelY = 0;
+float camVelX = 0;
+float camVelY = 0;
 void UpdateCameraCenter(Camera2D* camera, const Player &player, float deltaTime,
                         int gameScreenWidth, int gameScreenHeight) {
     camera->offset = { (float)gameScreenWidth/2.0f, (float)gameScreenHeight/2.0f};

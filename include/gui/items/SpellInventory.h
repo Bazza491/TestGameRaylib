@@ -18,7 +18,7 @@ private:
         float totalWidth = 0.0f;
     };
 
-    GuiSpellStorage storageGui;
+    mutable GuiSpellStorage storageGui;
 
     [[nodiscard]] Layout computeLayout() const;
     [[nodiscard]] Rectangle getSlotRect(int index) const;
