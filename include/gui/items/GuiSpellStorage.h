@@ -5,6 +5,8 @@
 #include "gui/SpellSlotUtils.h"
 #include "guns/SpellStorage.h"
 
+#include <vector>
+
 struct SpellDragState {
     bool active = false;
     SpellStorage* source = nullptr;
@@ -26,11 +28,14 @@ private:
     SpellStorage* storage = nullptr;
     Config config{};
     SpellDragState dragState{};
+    mutable std::vector<Rectangle> cachedSlotRects{};
+    mutable Rectangle cachedGridArea{0, 0, 0, 0};
 
     static GuiSpellStorage* activeDragOwner;
 
     [[nodiscard]] bool isDragOwner() const;
     [[nodiscard]] bool isDraggingSpellFrom(const SpellStorage* sourceStorage, int slot) const;
+    float updateGridLayout(Vector2 origin, float maxRowWidth) const;
 
 public:
     GuiSpellStorage(SpellStorage* storage, Config cfg = Config{});
@@ -51,6 +56,9 @@ public:
     void endDrag();
     void updateDragMouse(Vector2 mousePos);
 
+    [[nodiscard]] Rectangle computeGridArea(Vector2 origin, float maxRowWidth) const;
+    [[nodiscard]] Rectangle getSlotRect(Vector2 origin, float maxRowWidth, int index) const;
+    [[nodiscard]] int slotAtPosition(Vector2 origin, float maxRowWidth, Vector2 pos) const;
     float renderGrid(Vector2 origin, float maxRowWidth) const;
     void drawDraggedSpellSprite() const;
 

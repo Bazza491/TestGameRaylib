@@ -94,16 +94,28 @@ void GuiSpellStorage::updateDragMouse(Vector2 mousePos) {
     }
 }
 
-float GuiSpellStorage::renderGrid(Vector2 origin, float maxRowWidth) const {
-    if (!storage) return 0.0f;
+float GuiSpellStorage::updateGridLayout(Vector2 origin, float maxRowWidth) const {
+    cachedSlotRects.clear();
+
+    if (!storage || config.slotSize <= 0.0f) {
+        cachedGridArea = {origin.x, origin.y, 0.0f, 0.0f};
+        return 0.0f;
+    }
 
     int totalSlots = storage->getCapacity();
-    if (totalSlots <= 0 || config.slotSize <= 0.0f) return 0.0f;
+    if (totalSlots <= 0) {
+        cachedGridArea = {origin.x, origin.y, 0.0f, 0.0f};
+        return 0.0f;
+    }
 
     float slotSize = config.slotSize;
     float padding = config.padding;
     int columns = std::max(1, (int)std::floor((maxRowWidth + padding) / (slotSize + padding)));
     int rows = std::max(1, (int)std::ceil((float)totalSlots / (float)columns));
+
+    float slotsWidth = columns * (slotSize + padding) - padding;
+    float slotsHeight = rows * (slotSize + padding) - padding;
+    cachedGridArea = {origin.x, origin.y, slotsWidth, slotsHeight};
 
     for (int i = 0; i < totalSlots; ++i) {
         int col = i % columns;
@@ -113,6 +125,39 @@ float GuiSpellStorage::renderGrid(Vector2 origin, float maxRowWidth) const {
             origin.y + row * (slotSize + padding),
             slotSize,
             slotSize};
+
+        cachedSlotRects.push_back(rect);
+    }
+
+    return slotsHeight;
+}
+
+Rectangle GuiSpellStorage::computeGridArea(Vector2 origin, float maxRowWidth) const {
+    updateGridLayout(origin, maxRowWidth);
+    return cachedGridArea;
+}
+
+Rectangle GuiSpellStorage::getSlotRect(Vector2 origin, float maxRowWidth, int index) const {
+    updateGridLayout(origin, maxRowWidth);
+    if (index < 0 || index >= (int)cachedSlotRects.size()) return {0, 0, 0, 0};
+    return cachedSlotRects[index];
+}
+
+int GuiSpellStorage::slotAtPosition(Vector2 origin, float maxRowWidth, Vector2 pos) const {
+    updateGridLayout(origin, maxRowWidth);
+    for (int i = 0; i < (int)cachedSlotRects.size(); ++i) {
+        if (CheckCollisionPointRec(pos, cachedSlotRects[i])) return i;
+    }
+    return -1;
+}
+
+float GuiSpellStorage::renderGrid(Vector2 origin, float maxRowWidth) const {
+    float slotsHeight = updateGridLayout(origin, maxRowWidth);
+
+    if (!storage) return slotsHeight;
+
+    for (int i = 0; i < (int)cachedSlotRects.size(); ++i) {
+        Rectangle rect = cachedSlotRects[i];
 
         const Spell* spell = storage->getSpell(i);
         bool hiddenByDrag = config.interactive && isDraggingSpellFrom(storage, i);
@@ -131,7 +176,7 @@ float GuiSpellStorage::renderGrid(Vector2 origin, float maxRowWidth) const {
         }
     }
 
-    return std::max(0.0f, rows * (slotSize + padding) - padding);
+    return slotsHeight;
 }
 
 void GuiSpellStorage::drawDraggedSpellSprite() const {

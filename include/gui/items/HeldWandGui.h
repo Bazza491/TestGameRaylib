@@ -5,8 +5,6 @@
 #include "gui/items/GuiSpellStorage.h"
 #include "Player.h"
 
-#include <vector>
-
 class HeldWandGui : public GuiItem {
 private:
     Player* player = nullptr;
@@ -21,7 +19,6 @@ private:
         float statsStartY = 0.0f;
         float valueColumnX = 0.0f;
         float topRowHeight = 0.0f;
-        std::vector<Rectangle> spellSlots;
     };
 
     mutable GuiSpellStorage slotsGui;
@@ -33,8 +30,6 @@ private:
     void drawBackground(const PanelLayout& layout) const;
     void drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage, float alpha) const;
     void drawPreviewSpells(const Rectangle& area, SpellStorage& storage, float slotSize, float alpha) const;
-    Rectangle getSlotRect(const PanelLayout& layout, int index) const;
-    [[nodiscard]] int slotAtPosition(const PanelLayout& layout, Vector2 pos) const;
 
 public:
     explicit HeldWandGui(Player* player);

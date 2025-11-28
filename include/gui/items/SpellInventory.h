@@ -13,16 +13,12 @@ private:
     struct Layout {
         float startX = GUI_MARGIN;
         float startY = GUI_MARGIN;
-        float slotSize = SPELL_SLOT_SIZE;
-        float spacing = SPELL_SLOT_SPACING;
-        float totalWidth = 0.0f;
+        float maxRowWidth = 0.0f;
     };
 
     mutable GuiSpellStorage storageGui;
 
     [[nodiscard]] Layout computeLayout() const;
-    [[nodiscard]] Rectangle getSlotRect(int index) const;
-
 public:
     explicit SpellInventory(Player* player);
 

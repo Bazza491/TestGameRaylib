@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <vector>
 
 HeldWandGui::HeldWandGui(Player* player)
     : player(player), slotsGui(nullptr), previewSlotsGui(nullptr) {}
@@ -45,18 +46,15 @@ HeldWandGui::PanelLayout HeldWandGui::computeLayout() const {
     float topRowWidth = textureWidth + HELD_WAND_TEXTURE_GAP + statsWidth;
 
     SpellStorage& storage = player->getSelectedWand()->getSpellStorage();
-    int totalSlots = storage.getCapacity();
-    float slotSize = SPELL_SLOT_SIZE;
-    float slotSpacing = SPELL_SLOT_SPACING;
+    slotsGui.setStorage(&storage);
+    slotsGui.setSlotSize(SPELL_SLOT_SIZE);
+    slotsGui.setPadding(SPELL_SLOT_SPACING);
 
-    int columns = std::max(1, (int)std::floor((maxWidth - 2 * padding + slotSpacing) / (slotSize + slotSpacing)));
-    int rows = std::max(1, (int)std::ceil((float)totalSlots / (float)columns));
-    float slotsWidth = columns * (slotSize + slotSpacing) - slotSpacing;
-    float slotsHeight = rows * (slotSize + slotSpacing) - slotSpacing;
+    Rectangle slotsMetrics = slotsGui.computeGridArea({0, 0}, maxWidth - 2 * padding);
 
-    float panelWidth = std::max(topRowWidth, slotsWidth) + 2 * padding;
+    float panelWidth = std::max(topRowWidth, slotsMetrics.width) + 2 * padding;
     panelWidth = std::min(panelWidth, maxWidth);
-    float panelHeight = padding + topRowHeight + betweenRows + slotsHeight + padding;
+    float panelHeight = padding + topRowHeight + betweenRows + slotsMetrics.height + padding;
 
     float spellInvHeight = 2 * SPELL_SLOT_SIZE + SPELL_SLOT_SPACING;
     float baseY = GUI_MARGIN + std::max(WAND_SLOT_SIZE, spellInvHeight) + HELD_WAND_PANEL_OFFSET_Y;
@@ -71,16 +69,9 @@ HeldWandGui::PanelLayout HeldWandGui::computeLayout() const {
     layout.valueColumnX = layout.statsStartX + (float)maxLabel + valueSpacing;
     layout.topRowHeight = topRowHeight;
 
-    layout.spellSlots.reserve(totalSlots);
     float startX = layout.panel.x + padding;
     float startY = layout.panel.y + padding + topRowHeight + betweenRows;
-    layout.spellArea = {startX, startY, slotsWidth, slotsHeight};
-    for (int i = 0; i < totalSlots; ++i) {
-        int col = i % columns;
-        int row = i / columns;
-        Rectangle rect{startX + col * (slotSize + slotSpacing), startY + row * (slotSize + slotSpacing), slotSize, slotSize};
-        layout.spellSlots.push_back(rect);
-    }
+    layout.spellArea = {startX, startY, slotsMetrics.width, slotsMetrics.height};
 
     return layout;
 }
@@ -117,18 +108,6 @@ void HeldWandGui::drawSpellSlots(const PanelLayout& layout, SpellStorage& storag
     slotsGui.renderGrid(origin, layout.spellArea.width);
 }
 
-Rectangle HeldWandGui::getSlotRect(const PanelLayout& layout, int index) const {
-    if (index < 0 || index >= (int)layout.spellSlots.size()) return {0, 0, 0, 0};
-    return layout.spellSlots[index];
-}
-
-int HeldWandGui::slotAtPosition(const PanelLayout& layout, Vector2 pos) const {
-    for (int i = 0; i < (int)layout.spellSlots.size(); ++i) {
-        if (CheckCollisionPointRec(pos, layout.spellSlots[i])) return i;
-    }
-    return -1;
-}
-
 void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
     if (!player) return;
     Wand* wand = player->getSelectedWand();
@@ -138,21 +117,27 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
     SpellStorage& storage = wand->getSpellStorage();
 
     slotsGui.setStorage(&storage);
+    slotsGui.setSlotSize(SPELL_SLOT_SIZE);
+    slotsGui.setPadding(SPELL_SLOT_SPACING);
+    slotsGui.setInteractive(true);
+    slotsGui.setAlpha(1.0f);
+    slotsGui.setBaseFontSize(16);
+
     slotsGui.update(dt, virtualMousePos);
 
     const SpellDragState* drag = GuiSpellStorage::getActiveDrag();
 
     if ((!drag || !drag->active) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        int hit = slotAtPosition(layout, virtualMousePos);
+        int hit = slotsGui.slotAtPosition({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, virtualMousePos);
         if (hit >= 0 && storage.getSpell(hit)) {
-            Rectangle slot = getSlotRect(layout, hit);
-            slotsGui.beginSlotDrag(hit, slot, virtualMousePos);
+            Rectangle slotRect = slotsGui.getSlotRect({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, hit);
+            slotsGui.beginSlotDrag(hit, slotRect, virtualMousePos);
         }
     }
 
     drag = GuiSpellStorage::getActiveDrag();
     if (drag && drag->active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        int target = slotAtPosition(layout, virtualMousePos);
+        int target = slotsGui.slotAtPosition({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, virtualMousePos);
         if (target >= 0) {
             SpellStorage* source = drag->source;
             if (source == &storage) {
