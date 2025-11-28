@@ -160,10 +160,14 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
             } else if (source) {
                 source->swapSpells(storage, drag->slot, target);
             }
-            slotsGui.endDrag();
+            if (GuiSpellStorage* owner = GuiSpellStorage::getActiveDragOwner()) {
+                owner->endDrag();
+            }
         } else if (!overInventorySlots) {
             // Only clear drags released outside the spell inventory so drops to it can complete later.
-            slotsGui.endDrag();
+            if (GuiSpellStorage* owner = GuiSpellStorage::getActiveDragOwner()) {
+                owner->endDrag();
+            }
         }
     }
 

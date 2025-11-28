@@ -45,7 +45,9 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
         // processed before this update, so ending here won't cancel them but will prevent
         // lingering drag state when released elsewhere.
         if (insideInventory || drag->source == &player->getSpellInventory()) {
-            storageGui.endDrag();
+            if (GuiSpellStorage* owner = GuiSpellStorage::getActiveDragOwner()) {
+                owner->endDrag();
+            }
         }
     }
 }
