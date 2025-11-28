@@ -5,6 +5,7 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <vector>
 
 Color GetSpellColor(const Spell* spell) {
     if (!spell) return SPELL_SLOT_COLOR;
