@@ -8,8 +8,27 @@
 #include <string>
 #include <vector>
 
+namespace {
+bool IsShiftDown() {
+    return IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+}
+}
+
 HeldWandGui::HeldWandGui(Player* player)
     : player(player), slotsGui(nullptr), previewSlotsGui(nullptr) {}
+
+bool HeldWandGui::quickSwapToInventory(SpellStorage& wandStorage, int slotIndex) {
+    if (!player || slotIndex < 0) return false;
+
+    SpellStorage& inventory = player->getSpellInventory();
+    int targetSlot = inventory.findFirstEmptySlot();
+    if (targetSlot < 0) return false;
+
+    if (!wandStorage.getSpell(slotIndex)) return false;
+
+    wandStorage.swapSpells(inventory, slotIndex, targetSlot);
+    return true;
+}
 
 HeldWandGui::PanelLayout HeldWandGui::computeLayout() const {
     PanelLayout layout{};
@@ -130,8 +149,10 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
     if ((!drag || !drag->active) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         int hit = slotsGui.slotAtPosition({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, virtualMousePos);
         if (hit >= 0 && storage.getSpell(hit)) {
-            Rectangle slotRect = slotsGui.getSlotRect({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, hit);
-            slotsGui.beginSlotDrag(hit, slotRect, virtualMousePos);
+            if (!(IsShiftDown() && quickSwapToInventory(storage, hit))) {
+                Rectangle slotRect = slotsGui.getSlotRect({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, hit);
+                slotsGui.beginSlotDrag(hit, slotRect, virtualMousePos);
+            }
         }
     }
 

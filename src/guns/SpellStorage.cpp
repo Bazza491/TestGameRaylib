@@ -31,6 +31,13 @@ const Spell* SpellStorage::getSpell(int slot) const {
     return spells[slot].get();
 }
 
+int SpellStorage::findFirstEmptySlot() const {
+    for (int i = 0; i < (int)spells.size(); ++i) {
+        if (!spells[i]) return i;
+    }
+    return -1;
+}
+
 bool SpellStorage::swapSpells(int first, int second) {
     return swapSpells(*this, first, second);
 }

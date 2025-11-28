@@ -19,6 +19,7 @@ private:
     mutable GuiSpellStorage storageGui;
 
     [[nodiscard]] Layout computeLayout() const;
+    bool quickSwapToHeldWand(int slotIndex);
 public:
     explicit SpellInventory(Player* player);
 

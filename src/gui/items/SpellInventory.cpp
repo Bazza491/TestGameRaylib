@@ -1,10 +1,34 @@
 #include "gui/items/SpellInventory.h"
 
 #include "guns/Spell.h"
+#include "guns/Wand.h"
 #include <cmath>
+
+namespace {
+bool IsShiftDown() {
+    return IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+}
+}
 
 SpellInventory::SpellInventory(Player* player)
     : player(player), storageGui(player ? &player->getSpellInventory() : nullptr) {}
+
+bool SpellInventory::quickSwapToHeldWand(int slotIndex) {
+    if (!player || slotIndex < 0) return false;
+
+    Wand* wand = player->getSelectedWand();
+    if (!wand) return false;
+
+    SpellStorage& wandStorage = wand->getSpellStorage();
+    int targetSlot = wandStorage.findFirstEmptySlot();
+    if (targetSlot < 0) return false;
+
+    SpellStorage& inventory = player->getSpellInventory();
+    if (!inventory.getSpell(slotIndex)) return false;
+
+    inventory.swapSpells(wandStorage, slotIndex, targetSlot);
+    return true;
+}
 
 void SpellInventory::update(float dt, Vector2 virtualMousePos) {
     if (!player) return;
@@ -28,7 +52,9 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
     if ((!drag || !drag->active) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         int hit = storageGui.slotAtPosition(origin, layout.maxRowWidth, mouse);
         if (hit >= 0 && player->getSpellInventory().getSpell(hit)) {
-            beginSlotDrag(hit, mouse);
+            if (!(IsShiftDown() && quickSwapToHeldWand(hit))) {
+                beginSlotDrag(hit, mouse);
+            }
         }
     }
 

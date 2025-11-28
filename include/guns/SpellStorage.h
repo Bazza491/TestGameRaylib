@@ -20,6 +20,7 @@ public:
     [[nodiscard]] std::vector<std::unique_ptr<Spell>>& getSpells() { return spells; }
     [[nodiscard]] Spell* getSpell(int slot);
     [[nodiscard]] const Spell* getSpell(int slot) const;
+    [[nodiscard]] int findFirstEmptySlot() const;
     bool swapSpells(int first, int second);
     bool swapSpells(SpellStorage& other, int first, int second);
 

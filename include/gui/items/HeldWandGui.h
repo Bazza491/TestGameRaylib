@@ -30,6 +30,7 @@ private:
     void drawBackground(const PanelLayout& layout) const;
     void drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage, float alpha) const;
     void drawPreviewSpells(const Rectangle& area, SpellStorage& storage, float slotSize, float alpha) const;
+    bool quickSwapToInventory(SpellStorage& wandStorage, int slotIndex);
 
 public:
     explicit HeldWandGui(Player* player);
