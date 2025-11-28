@@ -12,6 +12,22 @@
 #include <memory>
 #include <vector>
 
+void Spell::copyBaseTo(Spell& other) const {
+    other.name     = name;
+    other.type     = type;
+    other.castMods = castMods;
+    other.projMods = projMods;
+
+    if (castState) {
+        auto stateCopy = std::make_unique<CastState>();
+        stateCopy->ctx  = castState->ctx;
+        stateCopy->proj = castState->proj;
+        other.castState = std::move(stateCopy);
+    } else {
+        other.castState.reset();
+    }
+}
+
 SparkBolt::SparkBolt() {
     name = "Spark Bolt";
     type = PROJECTILE;
@@ -31,7 +47,14 @@ SparkBolt::SparkBolt() {
     };
 
 }
-void SparkBolt::cast(const std::vector<std::unique_ptr<Spell>>& spells,
+
+std::unique_ptr<Spell> SparkBolt::clone() const {
+    auto copy = std::make_unique<SparkBolt>();
+    copyBaseTo(*copy);
+    return copy;
+}
+
+void SparkBolt::cast(const std::vector<std::unique_ptr<Spell>>& deck,
                      int& index,
                      const SpellTransform& transform,
                      CastState& cState) {
@@ -71,7 +94,13 @@ SparkBoltTrigger::SparkBoltTrigger() {
     };
 }
 
-void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& spells,
+std::unique_ptr<Spell> SparkBoltTrigger::clone() const {
+    auto copy = std::make_unique<SparkBoltTrigger>();
+    copyBaseTo(*copy);
+    return copy;
+}
+
+void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& deck,
                             int& index,
                             const SpellTransform& transform,
                             CastState& cState) {
@@ -89,11 +118,11 @@ void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& spells,
     while (innerIndex > 0 &&
             innerState.ctx.remainingDraw > 0 &&
             innerState.ctx.remainingCapacity > 0 &&
-            innerIndex < (int)spells.size()) {
-        Spell* s = spells[innerIndex].get();
+            innerIndex < (int)deck.size()) {
+        Spell* s = deck[innerIndex].get();
         if (!s) { ++innerIndex; continue; }
 
-        s->cast(spells, innerIndex, transform, innerState);
+        s->cast(deck, innerIndex, transform, innerState);
         ++innerIndex;
     }
 
@@ -136,7 +165,13 @@ DrawTwo::DrawTwo() {
     };
 }
 
-void DrawTwo::cast(const std::vector<std::unique_ptr<Spell>>& /*spells*/,
+std::unique_ptr<Spell> DrawTwo::clone() const {
+    auto copy = std::make_unique<DrawTwo>();
+    copyBaseTo(*copy);
+    return copy;
+}
+
+void DrawTwo::cast(const std::vector<std::unique_ptr<Spell>>& /*deck*/,
                    int& index,
                    const SpellTransform& transform,
                    CastState& cState) {

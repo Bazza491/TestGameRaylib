@@ -33,26 +33,32 @@ public:
     Spell() : name("Empty Slot") {}
     virtual ~Spell() = default;
 
+    [[nodiscard]] virtual std::unique_ptr<Spell> clone() const = 0;
+
     [[nodiscard]] const std::string& getName() const { return name; }
     [[nodiscard]] spellType getType() const { return type; }
 
 
     // NOTE:
-    // - spells: full list of spells in the wand
+    // - deck: cloned list of spells used for this cast
     // - index: current index in that list (passed by reference so spells can skip)
     // - remainingCapacity: how many more "slots" we can consume in this cast
     // - remainingDraw: how many spells we still want to draw this shot
     // - cState: where env spells get added
-    virtual void cast(const std::vector<std::unique_ptr<Spell>>& spells,
+    virtual void cast(const std::vector<std::unique_ptr<Spell>>& deck,
                       int& index,
                       const SpellTransform& origin,
                       CastState& cState) = 0;
+
+protected:
+    void copyBaseTo(Spell& other) const;
 };
 
 class SparkBolt : public Spell {
 public:
     SparkBolt();
-    void cast(const std::vector<std::unique_ptr<Spell>>& spells,
+    [[nodiscard]] std::unique_ptr<Spell> clone() const override;
+    void cast(const std::vector<std::unique_ptr<Spell>>& deck,
               int& index,
               const SpellTransform& transform,
               CastState& cState) override;
@@ -61,7 +67,8 @@ public:
 class SparkBoltTrigger : public Spell {
 public:
     SparkBoltTrigger();
-    void cast(const std::vector<std::unique_ptr<Spell>>& spells,
+    [[nodiscard]] std::unique_ptr<Spell> clone() const override;
+    void cast(const std::vector<std::unique_ptr<Spell>>& deck,
               int& index,
               const SpellTransform& transform,
               CastState& cState) override;
@@ -70,7 +77,8 @@ public:
 class DrawTwo : public Spell {
 public:
     DrawTwo();
-    void cast(const std::vector<std::unique_ptr<Spell>>& spells,
+    [[nodiscard]] std::unique_ptr<Spell> clone() const override;
+    void cast(const std::vector<std::unique_ptr<Spell>>& deck,
               int& index,
               const SpellTransform& transform,
               CastState& cState) override;

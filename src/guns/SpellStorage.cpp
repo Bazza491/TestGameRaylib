@@ -46,22 +46,28 @@ bool SpellStorage::swapSpells(SpellStorage& other, int first, int second) {
 void SpellStorage::cast(const SpellTransform& transform, CastState& state) {
     if (!castable || spells.empty()) return;
 
+    std::vector<std::unique_ptr<Spell>> castingDeck;
+    castingDeck.reserve(spells.size());
+    for (const auto& spell : spells) {
+        castingDeck.push_back(spell ? spell->clone() : nullptr);
+    }
+
     int remainingCapacity = capacity;
     int remainingDraw     = state.ctx.remainingDraw;
     int index             = 0;
 
     while (remainingCapacity > 0 &&
            remainingDraw > 0 &&
-           index < (int)spells.size()) {
+           index < (int)castingDeck.size()) {
 
-        Spell* spell = spells[index].get();
+        Spell* spell = castingDeck[index].get();
         if (!spell) {
             ++index;
             continue;
         }
 
         // Let the spell modify index/capacity/draw through references
-        spell->cast(spells, index, transform, state);
+        spell->cast(castingDeck, index, transform, state);
 
         // move to next spell unless spell changed index itself (trigger etc.)
         ++index;
