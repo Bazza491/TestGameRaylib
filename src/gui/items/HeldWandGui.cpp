@@ -135,22 +135,6 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
         }
     }
 
-    drag = GuiSpellStorage::getActiveDrag();
-    if (drag && drag->active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        int target = slotsGui.slotAtPosition({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, virtualMousePos);
-        if (target >= 0) {
-            SpellStorage* source = drag->source;
-            if (source == &storage) {
-                storage.swapSpells(drag->slot, target);
-            } else if (source) {
-                source->swapSpells(storage, drag->slot, target);
-            }
-        }
-        slotsGui.endDrag();
-    }
-
-    bool overSpells = CheckCollisionPointRec(virtualMousePos, layout.spellArea);
-
     const SpellStorage& inv = player->getSpellInventory();
     int invColumns = 8;
     int invRows = std::max(1, (int)std::ceil((float)inv.getCapacity() / (float)invColumns));
@@ -164,6 +148,26 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
     Rectangle invBounds = {GUI_MARGIN + wandWidth + GUI_MARGIN, GUI_MARGIN, invWidth, invHeight};
 
     bool overInventorySlots = CheckCollisionPointRec(virtualMousePos, invBounds);
+    bool overWandSpells = CheckCollisionPointRec(virtualMousePos, layout.spellArea);
+
+    drag = GuiSpellStorage::getActiveDrag();
+    if (drag && drag->active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+        int target = slotsGui.slotAtPosition({layout.spellArea.x, layout.spellArea.y}, layout.spellArea.width, virtualMousePos);
+        if (target >= 0) {
+            SpellStorage* source = drag->source;
+            if (source == &storage) {
+                storage.swapSpells(drag->slot, target);
+            } else if (source) {
+                source->swapSpells(storage, drag->slot, target);
+            }
+            slotsGui.endDrag();
+        } else if (!overInventorySlots) {
+            // Only clear drags released outside the spell inventory so drops to it can complete later.
+            slotsGui.endDrag();
+        }
+    }
+
+    bool overSpells = overWandSpells;
     bool draggingAnything = (drag && drag->active) || IsAnyWandDragging();
 
     previewAllowed = CheckCollisionPointRec(virtualMousePos, layout.panel) && !overSpells && !overInventorySlots && !draggingAnything;
