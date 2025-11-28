@@ -20,9 +20,6 @@ private:
 
     [[nodiscard]] Layout computeLayout() const;
     [[nodiscard]] Rectangle getSlotRect(int index) const;
-    [[nodiscard]] Color getSpellColor(const Spell* spell) const;
-    void drawSpellInSlot(int index, const Rectangle& rect) const;
-    void drawDraggedSpell() const;
 
 public:
     explicit SpellInventory(Player* player);

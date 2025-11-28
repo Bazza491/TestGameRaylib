@@ -1,9 +1,7 @@
 #include "gui/items/SpellInventory.h"
 
 #include "guns/Spell.h"
-#include <algorithm>
 #include <cmath>
-#include <string>
 
 SpellInventory::SpellInventory(Player* player)
     : player(player) {}
@@ -86,43 +84,23 @@ Rectangle SpellInventory::getSlotRect(int index) const {
     };
 }
 
-void SpellInventory::drawSpellInSlot(int index, const Rectangle& rect) const {
-    const Spell* spell = player->getSpellInventory().getSpell(index);
-    if (!spell) return;
-    if (IsDraggingSpellFrom(GetSpellDragState(), &player->getSpellInventory(), index)) return;
-
-    DrawSpellLabelFitted(spell, rect, 16, GRAY);
-}
-
 void SpellInventory::draw() const {
     if (!player) return;
 
-    const SpellStorage& storage = player->getSpellInventory();
-    int totalSlots = storage.getCapacity();
     Layout layout = computeLayout();
 
-    for (int i = 0; i < totalSlots; ++i) {
-        Rectangle rect = getSlotRect(i);
-        const Spell* spell = storage.getSpell(i);
-        bool hiddenByDrag = IsDraggingSpellFrom(GetSpellDragState(), &player->getSpellInventory(), i);
+    float renderedHeight = RenderSpellSlotGrid(
+        player->getSpellInventory(),
+        {layout.startX, layout.startY},
+        layout.totalWidth,
+        layout.slotSize,
+        layout.spacing,
+        true,
+        1.0f,
+        16);
 
-        Color fill = SPELL_SLOT_COLOR;
-        if (spell && !hiddenByDrag) {
-            fill = GetSpellColor(spell);
-        } else if (spell) {
-            fill = SPELL_SLOT_OCCUPIED_COLOR;
-        }
-
-        DrawRectangleRec(rect, fill);
-        DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, SPELL_SLOT_OUTLINE_COLOR);
-        if (spell && !hiddenByDrag) {
-            drawSpellInSlot(i, rect);
-        }
-    }
-
-    int rows = (int)std::ceil((float)totalSlots / 8.0f);
     float labelX = layout.startX;
-    float labelY = layout.startY + rows * (layout.slotSize + layout.spacing) + 6.0f;
+    float labelY = layout.startY + renderedHeight + 6.0f;
     DrawText("Spells", (int)labelX, (int)labelY, 20, GRAY);
 
     DrawDraggedSpellSprite(GetSpellDragState());
@@ -151,8 +129,4 @@ void SpellInventory::dropOnSlot(int fromSlot, int toSlot) {
 
 void SpellInventory::dropToWorld(int fromSlot) {
     (void)fromSlot;
-}
-
-void SpellInventory::drawDraggedSpell() const {
-    DrawDraggedSpellSprite(GetSpellDragState());
 }

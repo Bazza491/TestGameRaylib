@@ -2,6 +2,7 @@
 
 #include "guns/Spell.h"
 #include <algorithm>
+#include <cmath>
 #include <sstream>
 #include <string>
 
@@ -148,4 +149,50 @@ void DrawDraggedSpellSprite(const SpellDragState& state) {
     DrawRectangleRec(rect, fill);
     DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, SPELL_SLOT_OUTLINE_COLOR);
     DrawSpellLabelFitted(spell, rect, 14, GRAY);
+}
+
+float RenderSpellSlotGrid(
+    SpellStorage& storage,
+    Vector2 origin,
+    float maxRowWidth,
+    float slotSize,
+    float padding,
+    bool interactive,
+    float alpha,
+    int baseFontSize) {
+    int totalSlots = storage.getCapacity();
+    if (totalSlots <= 0 || slotSize <= 0.0f) return 0.0f;
+
+    int columns = std::max(1, (int)std::floor((maxRowWidth + padding) / (slotSize + padding)));
+    int rows = std::max(1, (int)std::ceil((float)totalSlots / (float)columns));
+
+    const SpellDragState& drag = GetSpellDragState();
+
+    for (int i = 0; i < totalSlots; ++i) {
+        int col = i % columns;
+        int row = i / columns;
+        Rectangle rect{
+            origin.x + col * (slotSize + padding),
+            origin.y + row * (slotSize + padding),
+            slotSize,
+            slotSize};
+
+        const Spell* spell = storage.getSpell(i);
+        bool hiddenByDrag = interactive && IsDraggingSpellFrom(drag, &storage, i);
+
+        Color fill = SPELL_SLOT_COLOR;
+        if (spell && !hiddenByDrag) {
+            fill = GetSpellColor(spell);
+        } else if (spell) {
+            fill = SPELL_SLOT_OCCUPIED_COLOR;
+        }
+
+        DrawRectangleRec(rect, Fade(fill, alpha));
+        DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, Fade(SPELL_SLOT_OUTLINE_COLOR, alpha));
+        if (spell && !hiddenByDrag) {
+            DrawSpellLabelFitted(spell, rect, baseFontSize, Fade(GRAY, alpha));
+        }
+    }
+
+    return std::max(0.0f, rows * (slotSize + padding) - padding);
 }

@@ -106,25 +106,16 @@ void HeldWandGui::drawPrimaryStats(const PanelLayout& layout, const Wand& wand) 
 }
 
 void HeldWandGui::drawSpellSlots(const PanelLayout& layout, SpellStorage& storage) const {
-    const SpellDragState& drag = GetSpellDragState();
-    for (int i = 0; i < (int)layout.spellSlots.size(); ++i) {
-        Rectangle rect = layout.spellSlots[i];
-        const Spell* spell = storage.getSpell(i);
-        bool hiddenByDrag = IsDraggingSpellFrom(drag, &storage, i);
-
-        Color fill = SPELL_SLOT_COLOR;
-        if (spell && !hiddenByDrag) {
-            fill = GetSpellColor(spell);
-        } else if (spell) {
-            fill = SPELL_SLOT_OCCUPIED_COLOR;
-        }
-
-        DrawRectangleRec(rect, fill);
-        DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, SPELL_SLOT_OUTLINE_COLOR);
-        if (spell && !hiddenByDrag) {
-            DrawSpellLabelFitted(spell, rect, 16, GRAY);
-        }
-    }
+    Vector2 origin{layout.spellArea.x, layout.spellArea.y};
+    RenderSpellSlotGrid(
+        storage,
+        origin,
+        layout.spellArea.width,
+        SPELL_SLOT_SIZE,
+        SPELL_SLOT_SPACING,
+        true,
+        1.0f,
+        16);
 }
 
 Rectangle HeldWandGui::getSlotRect(const PanelLayout& layout, int index) const {
@@ -202,28 +193,18 @@ static std::string formatFloat(float value) {
 
 void HeldWandGui::drawPreviewSpells(const Rectangle& area, SpellStorage& storage, float slotSize, float alpha) const {
     float padding = HELD_WAND_PANEL_PADDING;
-    float spacing = SPELL_SLOT_SPACING;
-    int total = storage.getCapacity();
+    Vector2 origin{area.x + padding, area.y};
+    float availableWidth = area.width - 2 * padding;
 
-    int columns = std::max(1, (int)std::floor((area.width - 2 * padding + spacing) / (slotSize + spacing)));
-    float startX = area.x + padding;
-    float startY = area.y;
-
-    for (int i = 0; i < total; ++i) {
-        int row = i / columns;
-        int col = i % columns;
-        Rectangle rect{startX + col * (slotSize + spacing), startY + row * (slotSize + spacing), slotSize, slotSize};
-        const Spell* spell = storage.getSpell(i);
-
-        Color fill = Fade(SPELL_SLOT_COLOR, alpha);
-        if (spell) fill = Fade(GetSpellColor(spell), alpha);
-
-        DrawRectangleRec(rect, fill);
-        DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, Fade(SPELL_SLOT_OUTLINE_COLOR, alpha));
-        if (spell) {
-            DrawSpellLabelFitted(spell, rect, 14, Fade(GRAY, alpha));
-        }
-    }
+    RenderSpellSlotGrid(
+        storage,
+        origin,
+        availableWidth,
+        slotSize,
+        SPELL_SLOT_SPACING,
+        false,
+        alpha,
+        14);
 }
 
 void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage, float alpha) const {

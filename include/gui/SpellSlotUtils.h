@@ -24,3 +24,13 @@ bool IsDraggingSpellFrom(const SpellDragState& state, const SpellStorage* storag
 Color GetSpellColor(const Spell* spell);
 void DrawSpellLabelFitted(const Spell* spell, const Rectangle& rect, int baseFontSize, Color color);
 void DrawDraggedSpellSprite(const SpellDragState& dragState);
+
+float RenderSpellSlotGrid(
+    SpellStorage& storage,
+    Vector2 origin,
+    float maxRowWidth,
+    float slotSize,
+    float padding,
+    bool interactive,
+    float alpha = 1.0f,
+    int baseFontSize = 16);
