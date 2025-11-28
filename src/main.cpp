@@ -93,11 +93,11 @@ int main() {
     //region gui elements (gui singleton)
     GuiManager& gui = GuiManager::getInstance();
     WandInventory* wandGui = gui.add<WandInventory>(&player);
+    HeldWandGui* heldGui = gui.add<HeldWandGui>(&player);
     SpellInventory* spellGui = gui.add<SpellInventory>(&player);
     gui.add<HealthBar>(&player);
     gui.add<ManaBar>(&player);
     gui.add<StaminaBar>(&player);
-    HeldWandGui* heldGui = gui.add<HeldWandGui>(&player);
 
     spellGui->visible = false;
     heldGui->visible = false;

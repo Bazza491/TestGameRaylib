@@ -23,6 +23,7 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
 
     Layout layout = computeLayout();
     Vector2 origin{layout.startX, layout.startY};
+    Rectangle gridArea = storageGui.computeGridArea(origin, layout.maxRowWidth);
 
     if ((!drag || !drag->active) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         int hit = storageGui.slotAtPosition(origin, layout.maxRowWidth, mouse);
@@ -34,12 +35,18 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
     drag = GuiSpellStorage::getActiveDrag();
     if (drag && drag->active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         int targetSlot = storageGui.slotAtPosition(origin, layout.maxRowWidth, mouse);
+        bool insideInventory = CheckCollisionPointRec(mouse, gridArea);
 
-        if (targetSlot >= 0) {
+        if (insideInventory && targetSlot >= 0) {
             dropOnSlot(drag->slot, targetSlot);
+        }
+
+        // Always clear our drag when it originated from this storage. Held wand drops are
+        // processed before this update, so ending here won't cancel them but will prevent
+        // lingering drag state when released elsewhere.
+        if (insideInventory || drag->source == &player->getSpellInventory()) {
             storageGui.endDrag();
         }
-        // If not dropped on this inventory, let other GUIs resolve the release.
     }
 }
 
