@@ -172,7 +172,6 @@ EnvSparkBolt::EnvSparkBolt(){
     this->onExpire = [this]() {
         this->dead = true;
     };
-//    color = GREEN;
     baseStats = ProjectileStats{
             .damage = 3.0f,
             .speed = 30.0f,
@@ -196,8 +195,6 @@ json EnvSparkBolt::toJson() const {
     j["type"] = "EnvSparkBolt";
     return j;
 }
-
-
 
 EnvWand::EnvWand() {}
 
@@ -227,7 +224,6 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
         }
         this->dead = true;
     };
-//    color = RED;
     baseStats = ProjectileStats{
             .damage = 3.0f,
             .speed = 30.0f,

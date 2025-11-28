@@ -145,6 +145,11 @@ void Player::update(float delta, Vector2 mouseWorldPos) {
                  IsKeyDown(KEY_A) ? -1.0f :
                  IsKeyDown(KEY_D) ?  1.0f : 0.0f;
 
+    // Update Wands
+    for (auto& wand : wands) {
+        wand->update(delta);
+    }
+
     // Apply friction and gravity
     velocity.x *= AIR_FRICTION_F;
     velocity.y *= AIR_FRICTION_F;

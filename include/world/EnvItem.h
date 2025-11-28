@@ -16,8 +16,9 @@ protected:
     bool hasPhysics;
     bool dead = false;
     Color color;
-    Texture2D texture; // TODO: use a texture manager and make this a texture ID or Texture2D&
+    Texture2D texture; // TODO: use a texture manager and make this a texture ID or Texture2D& (texture2Ds are references internally anyway so maybe not a big deal for now)
     Vector2 velocity;
+    // TODO: figure out whether to add lifetime, etc. here or in subclasses
 public:
     EnvItem() {}
     EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Texture2D texture);

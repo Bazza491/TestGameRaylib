@@ -88,12 +88,13 @@ void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& spells,
 
     while (innerIndex > 0 &&
             innerState.ctx.remainingDraw > 0 &&
+            innerState.ctx.remainingCapacity > 0 &&
             innerIndex < (int)spells.size()) {
         Spell* s = spells[innerIndex].get();
         if (!s) { ++innerIndex; continue; }
 
-        s->cast(spells, index, transform, innerState);
-        ++index;
+        s->cast(spells, innerIndex, transform, innerState);
+        ++innerIndex;
     }
 
     int consumed = innerIndex - (index + 1);
