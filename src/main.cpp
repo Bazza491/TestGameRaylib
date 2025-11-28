@@ -17,7 +17,7 @@
 #include "gui/items/WandInventory.h"
 #include "gui/items/SpellInventory.h"
 #include "gui/items/HeldWandGui.h"
-#include "gui/SpellSlotUtils.h"
+#include "gui/items/GuiSpellStorage.h"
 
 //#include <iostream>
 //#include <string>
@@ -205,7 +205,9 @@ int main() {
             inventoryOpen = !inventoryOpen;
             inventoryCastBuffer = INVENTORY_CAST_BUFFER;
             if (!inventoryOpen) {
-                EndSpellDrag();
+                if (GuiSpellStorage* dragOwner = GuiSpellStorage::getActiveDragOwner()) {
+                    dragOwner->endDrag();
+                }
             }
             spellGui->visible = inventoryOpen;
             heldGui->visible = inventoryOpen;

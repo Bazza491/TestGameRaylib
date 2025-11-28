@@ -4,19 +4,18 @@
 #include <cmath>
 
 SpellInventory::SpellInventory(Player* player)
-    : player(player) {}
+    : player(player), storageGui(player ? &player->getSpellInventory() : nullptr) {}
 
 void SpellInventory::update(float dt, Vector2 virtualMousePos) {
-    (void)dt;
     if (!player) return;
 
     Vector2 mouse = virtualMousePos;
     int totalSlots = player->getSpellInventory().getCapacity();
 
-    SpellDragState& drag = GetSpellDragState();
-    UpdateDragMouse(virtualMousePos);
+    const SpellDragState* drag = GuiSpellStorage::getActiveDrag();
+    storageGui.update(dt, virtualMousePos);
 
-    if (!drag.active && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if ((!drag || !drag->active) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         for (int i = 0; i < totalSlots; ++i) {
             Rectangle slot = getSlotRect(i);
             if (CheckCollisionPointRec(mouse, slot) && player->getSpellInventory().getSpell(i)) {
@@ -26,7 +25,8 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
         }
     }
 
-    if (drag.active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+    drag = GuiSpellStorage::getActiveDrag();
+    if (drag && drag->active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         int targetSlot = -1;
         for (int i = 0; i < totalSlots; ++i) {
             Rectangle slot = getSlotRect(i);
@@ -37,8 +37,8 @@ void SpellInventory::update(float dt, Vector2 virtualMousePos) {
         }
 
         if (targetSlot >= 0) {
-            dropOnSlot(drag.slot, targetSlot);
-            EndSpellDrag();
+            dropOnSlot(drag->slot, targetSlot);
+            storageGui.endDrag();
         }
         // If not dropped on this inventory, let other GUIs resolve the release.
     }
@@ -89,41 +89,40 @@ void SpellInventory::draw() const {
 
     Layout layout = computeLayout();
 
-    float renderedHeight = RenderSpellSlotGrid(
-        player->getSpellInventory(),
-        {layout.startX, layout.startY},
-        layout.totalWidth,
-        layout.slotSize,
-        layout.spacing,
-        true,
-        1.0f,
-        16);
+    storageGui.setStorage(&player->getSpellInventory());
+    storageGui.setSlotSize(layout.slotSize);
+    storageGui.setPadding(layout.spacing);
+    storageGui.setInteractive(true);
+    storageGui.setAlpha(1.0f);
+    storageGui.setBaseFontSize(16);
+
+    float renderedHeight = storageGui.renderGrid({layout.startX, layout.startY}, layout.totalWidth);
 
     float labelX = layout.startX;
     float labelY = layout.startY + renderedHeight + 6.0f;
     DrawText("Spells", (int)labelX, (int)labelY, 20, GRAY);
 
-    DrawDraggedSpellSprite(GetSpellDragState());
+    storageGui.drawDraggedSpellSprite();
 }
 
 void SpellInventory::beginSlotDrag(int slotIndex, Vector2 mousePos) {
     if (!player) return;
     SpellStorage& storage = player->getSpellInventory();
-    if (slotIndex < 0 || slotIndex >= storage.getCapacity()) return;
-    if (!storage.getSpell(slotIndex)) return;
-
+    storageGui.setStorage(&storage);
     Rectangle rect = getSlotRect(slotIndex);
-    StartSpellDrag(&storage, slotIndex, rect, mousePos, computeLayout().slotSize);
+    storageGui.beginSlotDrag(slotIndex, rect, mousePos);
 }
 
 void SpellInventory::dropOnSlot(int fromSlot, int toSlot) {
     if (!player) return;
     SpellStorage& storage = player->getSpellInventory();
-    SpellDragState& drag = GetSpellDragState();
-    if (drag.source == &storage) {
+    const SpellDragState* drag = GuiSpellStorage::getActiveDrag();
+    if (!drag) return;
+
+    if (drag->source == &storage) {
         storage.swapSpells(fromSlot, toSlot);
-    } else if (drag.source) {
-        drag.source->swapSpells(storage, fromSlot, toSlot);
+    } else if (drag->source) {
+        drag->source->swapSpells(storage, fromSlot, toSlot);
     }
 }
 

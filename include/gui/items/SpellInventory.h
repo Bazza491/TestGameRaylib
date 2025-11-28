@@ -2,7 +2,7 @@
 
 #include "gui/GuiItem.h"
 #include "gui/GuiConstants.h"
-#include "gui/SpellSlotUtils.h"
+#include "gui/items/GuiSpellStorage.h"
 #include "Player.h"
 
 class Spell;
@@ -17,6 +17,8 @@ private:
         float spacing = SPELL_SLOT_SPACING;
         float totalWidth = 0.0f;
     };
+
+    GuiSpellStorage storageGui;
 
     [[nodiscard]] Layout computeLayout() const;
     [[nodiscard]] Rectangle getSlotRect(int index) const;

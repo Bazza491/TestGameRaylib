@@ -7,7 +7,8 @@
 #include <cmath>
 #include <string>
 
-HeldWandGui::HeldWandGui(Player* player) : player(player) {}
+HeldWandGui::HeldWandGui(Player* player)
+    : player(player), slotsGui(nullptr), previewSlotsGui(nullptr) {}
 
 HeldWandGui::PanelLayout HeldWandGui::computeLayout() const {
     PanelLayout layout{};
@@ -107,15 +108,13 @@ void HeldWandGui::drawPrimaryStats(const PanelLayout& layout, const Wand& wand) 
 
 void HeldWandGui::drawSpellSlots(const PanelLayout& layout, SpellStorage& storage) const {
     Vector2 origin{layout.spellArea.x, layout.spellArea.y};
-    RenderSpellSlotGrid(
-        storage,
-        origin,
-        layout.spellArea.width,
-        SPELL_SLOT_SIZE,
-        SPELL_SLOT_SPACING,
-        true,
-        1.0f,
-        16);
+    slotsGui.setStorage(&storage);
+    slotsGui.setSlotSize(SPELL_SLOT_SIZE);
+    slotsGui.setPadding(SPELL_SLOT_SPACING);
+    slotsGui.setInteractive(true);
+    slotsGui.setAlpha(1.0f);
+    slotsGui.setBaseFontSize(16);
+    slotsGui.renderGrid(origin, layout.spellArea.width);
 }
 
 Rectangle HeldWandGui::getSlotRect(const PanelLayout& layout, int index) const {
@@ -138,28 +137,31 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
     PanelLayout layout = computeLayout();
     SpellStorage& storage = wand->getSpellStorage();
 
-    UpdateDragMouse(virtualMousePos);
-    SpellDragState& drag = GetSpellDragState();
+    slotsGui.setStorage(&storage);
+    slotsGui.update(dt, virtualMousePos);
 
-    if (!drag.active && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    const SpellDragState* drag = GuiSpellStorage::getActiveDrag();
+
+    if ((!drag || !drag->active) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         int hit = slotAtPosition(layout, virtualMousePos);
         if (hit >= 0 && storage.getSpell(hit)) {
             Rectangle slot = getSlotRect(layout, hit);
-            StartSpellDrag(&storage, hit, slot, virtualMousePos, slot.width);
+            slotsGui.beginSlotDrag(hit, slot, virtualMousePos);
         }
     }
 
-    if (drag.active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+    drag = GuiSpellStorage::getActiveDrag();
+    if (drag && drag->active && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         int target = slotAtPosition(layout, virtualMousePos);
         if (target >= 0) {
-            SpellStorage* source = drag.source;
+            SpellStorage* source = drag->source;
             if (source == &storage) {
-                storage.swapSpells(drag.slot, target);
+                storage.swapSpells(drag->slot, target);
             } else if (source) {
-                source->swapSpells(storage, drag.slot, target);
+                source->swapSpells(storage, drag->slot, target);
             }
         }
-        EndSpellDrag();
+        slotsGui.endDrag();
     }
 
     bool overSpells = CheckCollisionPointRec(virtualMousePos, layout.spellArea);
@@ -177,7 +179,7 @@ void HeldWandGui::update(float dt, Vector2 virtualMousePos) {
     Rectangle invBounds = {GUI_MARGIN + wandWidth + GUI_MARGIN, GUI_MARGIN, invWidth, invHeight};
 
     bool overInventorySlots = CheckCollisionPointRec(virtualMousePos, invBounds);
-    bool draggingAnything = drag.active || IsAnyWandDragging();
+    bool draggingAnything = (drag && drag->active) || IsAnyWandDragging();
 
     previewAllowed = CheckCollisionPointRec(virtualMousePos, layout.panel) && !overSpells && !overInventorySlots && !draggingAnything;
     if (previewAllowed) {
@@ -196,15 +198,14 @@ void HeldWandGui::drawPreviewSpells(const Rectangle& area, SpellStorage& storage
     Vector2 origin{area.x + padding, area.y};
     float availableWidth = area.width - 2 * padding;
 
-    RenderSpellSlotGrid(
-        storage,
-        origin,
-        availableWidth,
-        slotSize,
-        SPELL_SLOT_SPACING,
-        false,
-        alpha,
-        14);
+    previewSlotsGui.setStorage(&storage);
+    previewSlotsGui.setSlotSize(slotSize);
+    previewSlotsGui.setPadding(SPELL_SLOT_SPACING);
+    previewSlotsGui.setInteractive(false);
+    previewSlotsGui.setAlpha(alpha);
+    previewSlotsGui.setBaseFontSize(14);
+
+    previewSlotsGui.renderGrid(origin, availableWidth);
 }
 
 void HeldWandGui::drawPreview(const PanelLayout& layout, const Wand& wand, SpellStorage& storage, float alpha) const {
@@ -349,5 +350,5 @@ void HeldWandGui::draw() const {
         drawPreview(layout, *wand, storage, previewAlpha);
     }
 
-    DrawDraggedSpellSprite(GetSpellDragState());
+    slotsGui.drawDraggedSpellSprite();
 }

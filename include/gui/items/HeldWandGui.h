@@ -2,7 +2,7 @@
 
 #include "gui/GuiItem.h"
 #include "gui/GuiConstants.h"
-#include "gui/SpellSlotUtils.h"
+#include "gui/items/GuiSpellStorage.h"
 #include "Player.h"
 
 #include <vector>
@@ -23,6 +23,9 @@ private:
         float topRowHeight = 0.0f;
         std::vector<Rectangle> spellSlots;
     };
+
+    mutable GuiSpellStorage slotsGui;
+    mutable GuiSpellStorage previewSlotsGui;
 
     [[nodiscard]] PanelLayout computeLayout() const;
     void drawPrimaryStats(const PanelLayout& layout, const Wand& wand) const;

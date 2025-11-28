@@ -6,33 +6,6 @@
 #include <sstream>
 #include <string>
 
-static SpellDragState dragState;
-
-SpellDragState& GetSpellDragState() {
-    return dragState;
-}
-
-void StartSpellDrag(SpellStorage* storage, int slot, const Rectangle& slotRect, Vector2 mousePos, float slotSize) {
-    dragState.active = true;
-    dragState.source = storage;
-    dragState.slot = slot;
-    dragState.offset = {mousePos.x - slotRect.x, mousePos.y - slotRect.y};
-    dragState.mousePos = mousePos;
-    dragState.slotSize = slotSize;
-}
-
-void EndSpellDrag() {
-    dragState = SpellDragState{};
-}
-
-void UpdateDragMouse(Vector2 mousePos) {
-    dragState.mousePos = mousePos;
-}
-
-bool IsDraggingSpellFrom(const SpellDragState& state, const SpellStorage* storage, int slot) {
-    return state.active && state.source == storage && state.slot == slot;
-}
-
 Color GetSpellColor(const Spell* spell) {
     if (!spell) return SPELL_SLOT_COLOR;
 
@@ -131,68 +104,4 @@ void DrawSpellLabelFitted(const Spell* spell, const Rectangle& rect, int baseFon
         float textY = startY + lineHeight * (float)i;
         DrawText(ln.c_str(), (int)textX, (int)textY, (int)fontSize, color);
     }
-}
-
-void DrawDraggedSpellSprite(const SpellDragState& state) {
-    if (!state.active || !state.source) return;
-    Spell* spell = state.source->getSpell(state.slot);
-    if (!spell) return;
-
-    Rectangle rect = {
-        state.mousePos.x - state.slotSize * 0.5f,
-        state.mousePos.y - state.slotSize * 0.5f,
-        state.slotSize,
-        state.slotSize
-    };
-
-    Color fill = GetSpellColor(spell);
-    DrawRectangleRec(rect, fill);
-    DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, SPELL_SLOT_OUTLINE_COLOR);
-    DrawSpellLabelFitted(spell, rect, 14, GRAY);
-}
-
-float RenderSpellSlotGrid(
-    SpellStorage& storage,
-    Vector2 origin,
-    float maxRowWidth,
-    float slotSize,
-    float padding,
-    bool interactive,
-    float alpha,
-    int baseFontSize) {
-    int totalSlots = storage.getCapacity();
-    if (totalSlots <= 0 || slotSize <= 0.0f) return 0.0f;
-
-    int columns = std::max(1, (int)std::floor((maxRowWidth + padding) / (slotSize + padding)));
-    int rows = std::max(1, (int)std::ceil((float)totalSlots / (float)columns));
-
-    const SpellDragState& drag = GetSpellDragState();
-
-    for (int i = 0; i < totalSlots; ++i) {
-        int col = i % columns;
-        int row = i / columns;
-        Rectangle rect{
-            origin.x + col * (slotSize + padding),
-            origin.y + row * (slotSize + padding),
-            slotSize,
-            slotSize};
-
-        const Spell* spell = storage.getSpell(i);
-        bool hiddenByDrag = interactive && IsDraggingSpellFrom(drag, &storage, i);
-
-        Color fill = SPELL_SLOT_COLOR;
-        if (spell && !hiddenByDrag) {
-            fill = GetSpellColor(spell);
-        } else if (spell) {
-            fill = SPELL_SLOT_OCCUPIED_COLOR;
-        }
-
-        DrawRectangleRec(rect, Fade(fill, alpha));
-        DrawRectangleLinesEx(rect, SPELL_SLOT_BORDER, Fade(SPELL_SLOT_OUTLINE_COLOR, alpha));
-        if (spell && !hiddenByDrag) {
-            DrawSpellLabelFitted(spell, rect, baseFontSize, Fade(GRAY, alpha));
-        }
-    }
-
-    return std::max(0.0f, rows * (slotSize + padding) - padding);
 }
