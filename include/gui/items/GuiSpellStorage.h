@@ -13,18 +13,15 @@ struct SpellDragState {
     Vector2 mousePos{0.0f, 0.0f};
     float slotSize = SPELL_SLOT_SIZE;
 };
+struct Config {
+    float slotSize = SPELL_SLOT_SIZE;
+    float padding = SPELL_SLOT_SPACING;
+    float alpha = 1.0f;
+    bool interactive = true;
+    int baseFontSize = 16;
+};
 
 class GuiSpellStorage : public GuiItem {
-public:
-    struct Config {
-        Config() = default;
-        float slotSize = SPELL_SLOT_SIZE;
-        float padding = SPELL_SLOT_SPACING;
-        float alpha = 1.0f;
-        bool interactive = true;
-        int baseFontSize = 16;
-    };
-
 private:
     SpellStorage* storage = nullptr;
     Config config{};
