@@ -25,17 +25,19 @@ enum spellType {
 class Spell {
 protected:
     std::string name;
+    std::string description;
     spellType type;
     CastContext     castMods;   // modifiers this spell applies
     ProjectileStats projMods;   // modifiers this spell applies
     std::unique_ptr<CastState> castState;
 public:
-    Spell() : name("Empty Slot") {}
+    Spell() : name("Empty Slot"), description("Does nothing") {}
     virtual ~Spell() = default;
 
     [[nodiscard]] virtual std::unique_ptr<Spell> clone() const = 0;
 
     [[nodiscard]] const std::string& getName() const { return name; }
+    [[nodiscard]] const std::string& getDescription() const { return description; }
     [[nodiscard]] spellType getType() const { return type; }
 
 

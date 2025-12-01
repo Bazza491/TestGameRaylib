@@ -104,7 +104,7 @@ void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& deck,
                             int& index,
                             const SpellTransform& transform,
                             CastState& cState) {
-    std::cout << name << " cast (trigger)\n";
+    std::cout << name << " cast\n";
 
     // 1. Build a sub-cast from the *next* spells in the chain:
     CastState innerState;
@@ -175,7 +175,7 @@ void DrawTwo::cast(const std::vector<std::unique_ptr<Spell>>& /*deck*/,
                    int& index,
                    const SpellTransform& transform,
                    CastState& cState) {
-    std::cout << name << " cast (draw two)\n";
+    std::cout << name << " cast\n";
 
     cState.applyModifiers(castMods, projMods);
 

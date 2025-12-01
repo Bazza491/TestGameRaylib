@@ -2,7 +2,6 @@
 #include "raylib.h"
 #include "Common.h"
 #include "world/EnvItem.h"
-#include "guns/SpellStorage.h"
 #include "guns/Wand.h"
 #include "Player.h"
 #include "raymath.h"
@@ -80,8 +79,18 @@ Player::Player(Texture2D spriteSheet, Vector2 startPos) : pos(startPos), spells(
     }
 
     // Example starting spells for the inventory (kept empty by default)
-     spells.insertSpell(std::make_unique<SparkBolt>(), 0);
-     spells.insertSpell(std::make_unique<DrawTwo>(), 1);
+    spells.insertSpell(std::make_unique<SparkBolt>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
+    spells.insertSpell(std::make_unique<DrawTwo>());
 
     selectedWandSlot = 0;
     //endregion

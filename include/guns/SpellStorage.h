@@ -16,6 +16,7 @@ private:
 public:
     explicit SpellStorage(int capacity = 16, bool castable = true);
     void insertSpell(std::unique_ptr<Spell> spell, int slot);
+    bool insertSpell(std::unique_ptr<Spell> spell); // inserts into first empty slot
     [[nodiscard]] const std::vector<std::unique_ptr<Spell>>& getSpells() const { return spells; }
     [[nodiscard]] std::vector<std::unique_ptr<Spell>>& getSpells() { return spells; }
     [[nodiscard]] Spell* getSpell(int slot);

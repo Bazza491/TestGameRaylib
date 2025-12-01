@@ -21,6 +21,13 @@ void SpellStorage::insertSpell(std::unique_ptr<Spell> spell, int slot) {
     spells[slot] = std::move(spell);
 }
 
+bool SpellStorage::insertSpell(std::unique_ptr<Spell> spell) {
+    int slot = findFirstEmptySlot();
+    if (slot == -1) return false;
+    spells[slot] = std::move(spell);
+    return true;
+}
+
 Spell* SpellStorage::getSpell(int slot) {
     if (slot < 0 || slot >= (int)spells.size()) return nullptr;
     return spells[slot].get();
@@ -59,16 +66,20 @@ void SpellStorage::cast(const SpellTransform& transform, CastState& state) {
         castingDeck.push_back(spell ? spell->clone() : nullptr);
     }
 
-    int remainingCapacity = capacity;
-    int remainingDraw     = state.ctx.remainingDraw;
+    std::cout << capacity << std::endl;
+    std::cout << state.ctx.remainingDraw << std::endl;
+    std::cout << state.ctx.remainingCapacity << std::endl; // debug, ignore
+
     int index             = 0;
 
-    while (remainingCapacity > 0 &&
-           remainingDraw > 0 &&
+    while (index >= 0 &&
+           state.ctx.remainingDraw > 0 &&
+           state.ctx.remainingCapacity > 0 &&
            index < (int)castingDeck.size()) {
 
         Spell* spell = castingDeck[index].get();
         if (!spell) {
+            std::cout << "null spell cast" << std::endl;
             ++index;
             continue;
         }
