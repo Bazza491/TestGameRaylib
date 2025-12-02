@@ -95,9 +95,9 @@ public:
 };
 
 class EnvWand : public EnvItem {
+private:
+//    std::unique_ptr<Wand> wand;
 public:
-//    std::unique_ptr<Wand> wandData;
-
     EnvWand();
 
     nlohmann::json toJson() const override;

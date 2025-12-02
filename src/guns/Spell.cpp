@@ -45,7 +45,6 @@ SparkBolt::SparkBolt() {
             .size = 1.0f,
             .tint = WHITE
     };
-
 }
 
 std::unique_ptr<Spell> SparkBolt::clone() const {

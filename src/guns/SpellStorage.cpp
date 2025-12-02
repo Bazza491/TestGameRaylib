@@ -70,7 +70,7 @@ void SpellStorage::cast(const SpellTransform& transform, CastState& state) {
     std::cout << state.ctx.remainingDraw << std::endl;
     std::cout << state.ctx.remainingCapacity << std::endl; // debug, ignore
 
-    int index             = 0;
+    int index = 0;
 
     while (index >= 0 &&
            state.ctx.remainingDraw > 0 &&

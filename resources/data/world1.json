@@ -1,7 +1,20 @@
 {
     "items": [
         {
+            "acceleration": {
+                "x": 0.0,
+                "y": 0.0
+            },
             "blocking": true,
+            "collider": {
+                "rect": {
+                    "h": 72.0,
+                    "w": 1440.0,
+                    "x": 0.0,
+                    "y": 360.0
+                },
+                "type": "aabb"
+            },
             "color": {
                 "a": 255,
                 "b": 0,
@@ -9,14 +22,17 @@
                 "r": 0
             },
             "dead": false,
+            "drag": 0.0,
             "hasPhysics": false,
-            "hasTexture": true,
+            "hasTexture": false,
+            "mass": 1.0,
             "rect": {
                 "h": 72.0,
                 "w": 1440.0,
                 "x": 0.0,
                 "y": 360.0
             },
+            "restitution": 0.0,
             "type": "EnvItem",
             "velocity": {
                 "x": 0.0,
@@ -24,7 +40,20 @@
             }
         },
         {
+            "acceleration": {
+                "x": 0.0,
+                "y": 0.0
+            },
             "blocking": true,
+            "collider": {
+                "rect": {
+                    "h": 72.0,
+                    "w": 288.0,
+                    "x": 216.0,
+                    "y": 288.0
+                },
+                "type": "aabb"
+            },
             "color": {
                 "a": 255,
                 "b": 130,
@@ -32,14 +61,17 @@
                 "r": 130
             },
             "dead": false,
+            "drag": 0.0,
             "hasPhysics": false,
-            "hasTexture": true,
+            "hasTexture": false,
+            "mass": 1.0,
             "rect": {
                 "h": 72.0,
                 "w": 288.0,
                 "x": 216.0,
                 "y": 288.0
             },
+            "restitution": 0.0,
             "type": "EnvItem",
             "velocity": {
                 "x": 0.0,
@@ -47,7 +79,20 @@
             }
         },
         {
+            "acceleration": {
+                "x": 0.0,
+                "y": 0.0
+            },
             "blocking": true,
+            "collider": {
+                "rect": {
+                    "h": 72.0,
+                    "w": 72.0,
+                    "x": 72.0,
+                    "y": 144.0
+                },
+                "type": "aabb"
+            },
             "color": {
                 "a": 255,
                 "b": 241,
@@ -55,14 +100,17 @@
                 "r": 0
             },
             "dead": false,
+            "drag": 0.0,
             "hasPhysics": false,
-            "hasTexture": true,
+            "hasTexture": false,
+            "mass": 1.0,
             "rect": {
                 "h": 72.0,
                 "w": 72.0,
                 "x": 72.0,
                 "y": 144.0
             },
+            "restitution": 0.0,
             "type": "EnvItem",
             "velocity": {
                 "x": 0.0,
