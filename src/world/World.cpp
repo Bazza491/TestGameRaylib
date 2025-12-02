@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "world/World.h"
 #include "world/EnvItem.h"
+#include "world/Physics.h"
 
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -52,6 +53,26 @@ static Vector2 jsonToVec2(const json& j) {
     v.x = j.value("x", 0.0f);
     v.y = j.value("y", 0.0f);
     return v;
+}
+
+static Collider jsonToCollider(const json &j, const Rectangle &fallback) {
+    if (!j.contains("type")) return Physics::makeAABB(fallback);
+    std::string type = j.value("type", "aabb");
+    if (type == "circle") {
+        Vector2 center = jsonToVec2(j.value("center", json::object()));
+        float radius = j.value("radius", fallback.width * 0.5f);
+        return Physics::makeCircle(center, radius);
+    }
+    if (type == "polygon" && j.contains("points")) {
+        std::vector<Vector2> pts;
+        for (const auto &p : j["points"]) {
+            pts.push_back(jsonToVec2(p));
+        }
+        if (!pts.empty()) return Physics::makePolygon(pts);
+    }
+    Rectangle rect = fallback;
+    if (j.contains("rect")) rect = jsonToRect(j["rect"]);
+    return Physics::makeAABB(rect);
 }
 
 // Factory: create correct EnvItem subclass from JSON produced by EnvItem::toJson()
@@ -112,12 +133,23 @@ static std::unique_ptr<EnvItem> makeEnvItemFromJson(const json& j) {
         return nullptr;
     }
 
+    if (j.contains("collider")) {
+        item->setCollider(jsonToCollider(j["collider"], rect));
+    }
+    item->setMass(j.value("mass", item->getMass()));
+    item->setRestitution(j.value("restitution", item->getRestitution()));
+    item->setDrag(j.value("drag", item->getDrag()));
+    if (j.contains("acceleration")) {
+        item->setAcceleration(jsonToVec2(j["acceleration"]));
+    }
+
     // Note: we ignore "dead" and "hasTexture" on load for now.
     return item;
 }
 
 void World::loadWorld(const std::string& path) {
     clear();
+    staticColliders.clear();
 
     std::ifstream in(path);
     if (!in.is_open()) {
@@ -151,6 +183,9 @@ void World::loadWorld(const std::string& path) {
         auto item = makeEnvItemFromJson(itemJson);
         if (item) {
             items.push_back(std::move(item));
+            if (items.back()->isBlocking() && !items.back()->isPhysics()) {
+                staticColliders.push_back(items.back()->getCollider());
+            }
         }
     }
 
@@ -182,8 +217,13 @@ const std::vector<std::unique_ptr<EnvItem>>& World::getItems() const {
     return items;
 }
 
+const std::vector<Collider>& World::getStaticColliders() const {
+    return staticColliders;
+}
+
 void World::clear() {
     items.clear();
+    staticColliders.clear();
 }
 
 // --------------------
@@ -208,6 +248,9 @@ void World::update() {
             std::cout << "Adding item to world from pending queue...\n";
             items.push_back(std::move(p));
             std::cout << "Added item to world. Total items: " << items.size() << "\n";
+            if (items.back()->isBlocking() && !items.back()->isPhysics()) {
+                staticColliders.push_back(items.back()->getCollider());
+            }
         }
         pendingAdd.clear();
     }

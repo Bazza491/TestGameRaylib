@@ -6,6 +6,7 @@
 
 #include "raylib.h"
 #include "EnvItem.h"
+#include "Physics.h"
 
 class World {
 private:
@@ -15,6 +16,8 @@ private:
     std::vector<std::unique_ptr<EnvItem>> items;
 
     std::vector<std::unique_ptr<EnvItem>> pendingAdd;
+
+    std::vector<Collider> staticColliders;
 
 public:
     World(const World&) = delete;           // no copy
@@ -29,6 +32,7 @@ public:
 
     void addItem(std::unique_ptr<EnvItem> item);
     [[nodiscard]] const std::vector<std::unique_ptr<EnvItem>>& getItems() const;
+    [[nodiscard]] const std::vector<Collider>& getStaticColliders() const;
     void clear();
 
     // Game loop functions

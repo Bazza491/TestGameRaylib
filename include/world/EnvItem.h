@@ -1,8 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <variant>
+#include <vector>
 #include "raylib.h"
 #include "guns/CastTypes.h"
+
+#include "world/Physics.h"
 
 #include <nlohmann/json.hpp>
 
@@ -12,12 +16,17 @@ class Wand;
 class EnvItem {
 protected:
     Rectangle rect;
+    Collider collider;
     bool blocking;
     bool hasPhysics;
     bool dead = false;
     Color color;
     Texture2D texture; // TODO: use a texture manager and make this a texture ID or Texture2D& (texture2Ds are references internally anyway so maybe not a big deal for now)
     Vector2 velocity;
+    Vector2 acceleration;
+    float mass = 1.0f;
+    float restitution = 0.0f;
+    float drag = 0.0f;
     // TODO: figure out whether to add lifetime, etc. here or in subclasses
 public:
     EnvItem() {}
@@ -28,7 +37,8 @@ public:
     virtual ~EnvItem() = default;
 
     virtual void update();
-    bool isColliding(Rectangle rec);
+
+    bool isColliding(const Collider &other) const;
 
     virtual nlohmann::json toJson() const;
     void saveToFile(const std::string& path) const;
@@ -36,6 +46,9 @@ public:
     // Getters and setters
     Rectangle getRect() const;
     void setRect(Rectangle rect);
+    const Collider &getCollider() const;
+    void setCollider(const Collider &collider);
+    void setColliderFromRect(Rectangle rect);
     bool isBlocking() const;
     void setBlocking(bool blocking);
     bool isPhysics() const;
@@ -46,6 +59,14 @@ public:
     void setTexture(Texture2D texture);
     const Vector2 &getVelocity() const;
     void setVelocity(const Vector2 &velocity);
+    const Vector2 &getAcceleration() const;
+    void setAcceleration(const Vector2 &acceleration);
+    float getMass() const;
+    void setMass(float mass);
+    float getRestitution() const;
+    void setRestitution(float restitution);
+    float getDrag() const;
+    void setDrag(float drag);
     bool isDead() const;
 };
 

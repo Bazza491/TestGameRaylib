@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <cmath>
 #include "world/EnvItem.h"
 #include "Common.h"
 #include "guns/Wand.h"
+#include "world/World.h"
 #include <fstream>
 #include "guns/CastState.h"
 #include "guns/SpellTransform.h"
@@ -13,28 +15,72 @@ using nlohmann::json;
 
 
 
-EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Texture2D texture) : rect(rect), blocking(blocking),
-hasPhysics(hasPhysics), color(RED), texture(texture), velocity((Vector2) {0, 0}) {}
-EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Texture2D texture, Vector2 velocity) : rect(rect), blocking(blocking),
-hasPhysics(hasPhysics), color(RED), texture(texture), velocity(velocity) {}
-EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Color color) : rect(rect), blocking(blocking),
-hasPhysics(hasPhysics), color(color), velocity((Vector2) {0, 0}){}
-EnvItem::EnvItem(Rectangle rect, Color color) : rect(rect), blocking(true), hasPhysics(false), color(color),
-velocity((Vector2) {0, 0}) {}
+EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Texture2D texture) : rect(rect), collider(Physics::makeAABB(rect)), blocking(blocking),
+hasPhysics(hasPhysics), color(RED), texture(texture), velocity((Vector2) {0, 0}), acceleration({0, 0}) {}
+EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Texture2D texture, Vector2 velocity) : rect(rect), collider(Physics::makeAABB(rect)), blocking(blocking),
+hasPhysics(hasPhysics), color(RED), texture(texture), velocity(velocity), acceleration({0, 0}) {}
+EnvItem::EnvItem(Rectangle rect, bool blocking, bool hasPhysics, Color color) : rect(rect), collider(Physics::makeAABB(rect)), blocking(blocking),
+hasPhysics(hasPhysics), color(color), velocity((Vector2) {0, 0}), acceleration({0, 0}){}
+EnvItem::EnvItem(Rectangle rect, Color color) : rect(rect), collider(Physics::makeAABB(rect)), blocking(true), hasPhysics(false), color(color),
+velocity((Vector2) {0, 0}), acceleration({0, 0}) {}
 void EnvItem::update() {
-    if (hasPhysics) {
-        rect.x += velocity.x;
-        rect.y += velocity.y;
-        velocity.x *= AIR_FRICTION_F;
-        velocity.y *= AIR_FRICTION_F;
-        float afc = AIR_FRICTION_C;
-//        if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) dead = true;
+    if (!hasPhysics) return;
+
+    float dt = GetFrameTime();
+    Vector2 gravity{0.0f, G};
+    velocity.x += (acceleration.x + gravity.x) * dt;
+    velocity.y += (acceleration.y + gravity.y) * dt;
+
+    float dragFactor = std::max(0.0f, 1.0f - drag * dt);
+    velocity.x *= dragFactor;
+    velocity.y *= dragFactor;
+
+    Vector2 delta{velocity.x * dt, velocity.y * dt};
+
+    Collider movedCollider = collider;
+    Physics::translate(movedCollider, delta);
+
+    World &world = World::getInstance();
+    const auto &statics = world.getStaticColliders();
+
+    float remaining = 1.0f;
+    Vector2 applied{0.0f, 0.0f};
+    Collider current = collider;
+
+    for (const auto &obstacle : statics) {
+        auto sweep = Physics::sweepAABB(current, delta, obstacle);
+        if (sweep.hit && sweep.timeOfImpact < remaining) {
+            remaining = sweep.timeOfImpact;
+            applied = {delta.x * remaining, delta.y * remaining};
+            Physics::translate(current, applied);
+
+            // Slide along surface
+            float vn = velocity.x * sweep.normal.x + velocity.y * sweep.normal.y;
+            Vector2 bounce{velocity.x - (1 + restitution) * vn * sweep.normal.x,
+                           velocity.y - (1 + restitution) * vn * sweep.normal.y};
+            velocity = bounce;
+            delta = {velocity.x * dt * (1.0f - remaining), velocity.y * dt * (1.0f - remaining)};
+        }
     }
+
+    Physics::translate(current, delta);
+
+    // Handle any residual penetration
+    for (const auto &obstacle : statics) {
+        if (Physics::overlaps(current, obstacle)) {
+            Vector2 correction = Physics::resolvePenetration(current, obstacle);
+            Physics::translate(current, correction);
+            if (correction.y != 0) velocity.y = 0;
+            if (correction.x != 0) velocity.x = 0;
+        }
+    }
+
+    collider = current;
+    rect = Physics::computeAABB(collider);
 }
 
-bool EnvItem::isColliding(Rectangle rec) {
-    Rectangle bigger = (Rectangle){rect.x-1.0f, rect.y-1.0f, rect.width+2.0f, rect.height+2.0f};
-    return CheckCollisionRecs(rec, bigger);
+bool EnvItem::isColliding(const Collider &other) const {
+    return Physics::overlaps(collider, other);
 }
 
 static json colorToJson(Color c) {
@@ -70,6 +116,42 @@ json EnvItem::toJson() const {
             {"y", velocity.y}
     };
 
+    j["acceleration"] = {
+            {"x", acceleration.x},
+            {"y", acceleration.y}
+    };
+
+    j["mass"] = mass;
+    j["restitution"] = restitution;
+    j["drag"] = drag;
+
+    switch (collider.type) {
+        case ColliderType::AABB:
+            j["collider"] = {
+                    {"type", "aabb"},
+                    {"rect", {{"x", collider.rect.x}, {"y", collider.rect.y}, {"w", collider.rect.width}, {"h", collider.rect.height}}}
+            };
+            break;
+        case ColliderType::Circle:
+            j["collider"] = {
+                    {"type", "circle"},
+                    {"center", {{"x", collider.center.x}, {"y", collider.center.y}}},
+                    {"radius", collider.radius}
+            };
+            break;
+        case ColliderType::Polygon: {
+            nlohmann::json pts = nlohmann::json::array();
+            for (const auto &p : collider.points) {
+                pts.push_back({{"x", p.x}, {"y", p.y}});
+            }
+            j["collider"] = {
+                    {"type", "polygon"},
+                    {"points", pts}
+            };
+            break;
+        }
+    }
+
     return j;
 }
 
@@ -85,6 +167,17 @@ Rectangle EnvItem::getRect() const {
 }
 void EnvItem::setRect(Rectangle rect) {
     EnvItem::rect = rect;
+    setColliderFromRect(rect);
+}
+const Collider &EnvItem::getCollider() const {
+    return collider;
+}
+void EnvItem::setCollider(const Collider &collider) {
+    EnvItem::collider = collider;
+    rect = Physics::computeAABB(collider);
+}
+void EnvItem::setColliderFromRect(Rectangle rect) {
+    setCollider(Physics::makeAABB(rect));
 }
 bool EnvItem::isBlocking() const {
     return blocking;
@@ -120,6 +213,37 @@ const Vector2 &EnvItem::getVelocity() const {
 
 void EnvItem::setVelocity(const Vector2 &velocity) {
     EnvItem::velocity = velocity;
+}
+const Vector2 &EnvItem::getAcceleration() const {
+    return acceleration;
+}
+
+void EnvItem::setAcceleration(const Vector2 &acceleration) {
+    EnvItem::acceleration = acceleration;
+}
+
+float EnvItem::getMass() const {
+    return mass;
+}
+
+void EnvItem::setMass(float mass) {
+    EnvItem::mass = mass;
+}
+
+float EnvItem::getRestitution() const {
+    return restitution;
+}
+
+void EnvItem::setRestitution(float restitution) {
+    EnvItem::restitution = restitution;
+}
+
+float EnvItem::getDrag() const {
+    return drag;
+}
+
+void EnvItem::setDrag(float drag) {
+    EnvItem::drag = drag;
 }
 //endregion
 
