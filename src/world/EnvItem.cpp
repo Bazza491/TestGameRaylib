@@ -261,6 +261,8 @@ EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
             .size = 0.0f,
             .tint = WHITE
     };
+    lifetimeRemaining = baseStats.lifetime;
+    moveSpeed = baseStats.speed;
 }
 
 EnvSpell::~EnvSpell() = default;
@@ -269,18 +271,82 @@ void EnvSpell::setCastState(CastState&& state) {
     castState = std::make_unique<CastState>(std::move(state));
 }
 
+void EnvSpell::setRotation(float rotationDegrees) {
+    rotation = rotationDegrees;
+}
+
+void EnvSpell::setMovementMode(SpellMovementMode mode) {
+    movementMode = mode;
+}
+
+void EnvSpell::setMoveSpeed(float speed) {
+    moveSpeed = speed;
+}
+
+void EnvSpell::setGravityScale(float scale) {
+    gravityScale = scale;
+}
+
+void EnvSpell::setLifetimeRemaining(float lifetimeSeconds) {
+    lifetimeRemaining = lifetimeSeconds;
+}
+
 void EnvSpell::update() {
-    rect.x += velocity.x;
-    rect.y += velocity.y;
-    velocity.x *= AIR_FRICTION_F;
-    velocity.y *= AIR_FRICTION_F;
-    float afc = AIR_FRICTION_C;
-    if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) onExpire();
+    float dt = GetFrameTime();
+
+    lifetimeRemaining -= dt;
+    if (lifetimeRemaining <= 0.0f) {
+        onExpire();
+        return;
+    }
+
+    World &world = World::getInstance();
+    auto hitsBlocking = [&](const Collider &target) {
+        for (const auto &obstacle : world.getStaticColliders()) {
+            if (Physics::overlaps(target, obstacle)) return true;
+        }
+        for (const auto &item : world.getItems()) {
+            if (item.get() == this) continue;
+            if (!item->isBlocking()) continue;
+            if (Physics::overlaps(target, item->getCollider())) return true;
+        }
+        return false;
+    };
+
+    if (movementMode == SpellMovementMode::Physics) {
+        hasPhysics = true;
+        EnvItem::update();
+        if (hitsBlocking(collider)) {
+            onExpire();
+            return;
+        }
+        rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
+    } else {
+        Vector2 forward{cosf(rotation * DEG2RAD), sinf(rotation * DEG2RAD)};
+        moveSpeed += G * gravityScale * dt;
+        Vector2 delta{forward.x * moveSpeed * dt, forward.y * moveSpeed * dt};
+
+        Collider moved = collider;
+        Physics::translate(moved, delta);
+
+        if (hitsBlocking(moved)) {
+            onExpire();
+            return;
+        }
+
+        collider = moved;
+        rect = Physics::computeAABB(collider);
+    }
 }
 
 json EnvSpell::toJson() const {
     json j = EnvItem::toJson();
     j["type"] = "EnvSpell";
+    j["rotation"] = rotation;
+    j["lifetimeRemaining"] = lifetimeRemaining;
+    j["movementMode"] = movementMode == SpellMovementMode::Physics ? "physics" : "arrow";
+    j["moveSpeed"] = moveSpeed;
+    j["gravityScale"] = gravityScale;
     return j;
 }
 
@@ -290,6 +356,22 @@ int EnvSpell::getCastStateSize() const {
 
 ProjectileStats EnvSpell::getBaseStats() const {
     return baseStats;
+}
+
+float EnvSpell::getLifetimeRemaining() const {
+    return lifetimeRemaining;
+}
+
+float EnvSpell::getGravityScale() const {
+    return gravityScale;
+}
+
+float EnvSpell::getMoveSpeed() const {
+    return moveSpeed;
+}
+
+SpellMovementMode EnvSpell::getMovementMode() const {
+    return movementMode;
 }
 
 EnvSparkBolt::EnvSparkBolt(){
@@ -303,15 +385,12 @@ EnvSparkBolt::EnvSparkBolt(){
             .size = 8.0f,
             .tint = GREEN
     };
+    lifetimeRemaining = baseStats.lifetime;
+    moveSpeed = baseStats.speed;
 }
 
 void EnvSparkBolt::update() {
-    rect.x += velocity.x;
-    rect.y += velocity.y;
-    velocity.x *= AIR_FRICTION_F;
-    velocity.y *= AIR_FRICTION_F;
-    float afc = AIR_FRICTION_C;
-    if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) onExpire();
+    EnvSpell::update();
 }
 
 json EnvSparkBolt::toJson() const {
@@ -337,7 +416,10 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
     this->onExpire = [this]() {
         if (this->castState) {
 
-            float rot = atan2f(this->velocity.y, this->velocity.x) * RAD2DEG; // Calculate which way the spell is currently travelling
+            float rot = this->rotation;
+            if (this->velocity.x != 0.0f || this->velocity.y != 0.0f) {
+                rot = atan2f(this->velocity.y, this->velocity.x) * RAD2DEG;
+            }
             // TODO: Payload should cast in opposite direction if spell has hit wall
 
             // Pass the transform and the CastState metadata
@@ -355,15 +437,12 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
             .size = 8.0f,
             .tint = RED
     };
+    lifetimeRemaining = baseStats.lifetime;
+    moveSpeed = baseStats.speed;
 }
 
 void EnvSparkBoltTrigger::update() {
-    rect.x += velocity.x;
-    rect.y += velocity.y;
-    velocity.x *= AIR_FRICTION_F;
-    velocity.y *= AIR_FRICTION_F;
-    float afc = AIR_FRICTION_C;
-    if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) onExpire();
+    EnvSpell::update();
 }
 
 json EnvSparkBoltTrigger::toJson() const {

@@ -68,10 +68,21 @@ public:
     float getDrag() const;
     void setDrag(float drag);
     bool isDead() const;
+    virtual float getRotation() const { return 0.0f; }
+};
+
+enum class SpellMovementMode {
+    Physics,
+    Arrow
 };
 
 class EnvSpell : public EnvItem {
 protected:
+    float rotation = 0.0f;
+    float lifetimeRemaining = 0.0f;
+    SpellMovementMode movementMode = SpellMovementMode::Arrow;
+    float moveSpeed = 0.0f;
+    float gravityScale = 1.0f;
     std::unique_ptr<CastState> castState;
     std::function<void()> onExpire;
     ProjectileStats baseStats;
@@ -79,9 +90,19 @@ public:
     EnvSpell();
     ~EnvSpell();
     void setCastState(CastState&& state);
+    void setRotation(float rotationDegrees);
+    void setMovementMode(SpellMovementMode mode);
+    void setMoveSpeed(float speed);
+    void setGravityScale(float scale);
+    void setLifetimeRemaining(float lifetimeSeconds);
     void update() override;
     int getCastStateSize() const;
     ProjectileStats getBaseStats() const;
+    float getLifetimeRemaining() const;
+    float getGravityScale() const;
+    float getMoveSpeed() const;
+    SpellMovementMode getMovementMode() const;
+    float getRotation() const override { return rotation; }
 
     nlohmann::json toJson() const override;
 };

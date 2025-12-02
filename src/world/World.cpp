@@ -260,11 +260,14 @@ void World::draw() const {
     for (const auto& item : items) {
         Rectangle r = item->getRect();
         Color c = item->getColor();
-        DrawRectangleRec(r, c);
+        float rotation = item->getRotation();
+        Vector2 origin{r.width * 0.5f, r.height * 0.5f};
+        DrawRectanglePro(r, origin, rotation, c);
 
         Texture2D tex = item->getTexture();
         if (tex.id != 0) {
-            DrawTexture(tex, static_cast<int>(r.x), static_cast<int>(r.y), WHITE);
+            Rectangle src{0.0f, 0.0f, static_cast<float>(tex.width), static_cast<float>(tex.height)};
+            DrawTexturePro(tex, src, r, origin, rotation, WHITE);
         }
     }
 }
