@@ -256,7 +256,7 @@ EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
     color = BLUE;
     baseStats = ProjectileStats{
             .damage = 0.0f,
-            .speed = 30.0f,
+            .speed = 300.0f,
             .spread = 30.0f,
             .knockback = 0.0f,
             .lifetime = 0.0f,
@@ -265,6 +265,7 @@ EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
     };
     lifetimeRemaining = baseStats.lifetime;
     moveSpeed = baseStats.speed;
+    drag = 1.0f;
 }
 
 EnvSpell::~EnvSpell() = default;
@@ -341,7 +342,7 @@ void EnvSpell::update() {
         velocity.x *= dragFactor;
         velocity.y *= dragFactor;
 
-        Vector2 delta{velocity.x, velocity.y};
+        Vector2 delta{velocity.x * dt, velocity.y * dt};
 
         Collider moved = collider;
         Physics::translate(moved, delta);
@@ -403,7 +404,7 @@ EnvSparkBolt::EnvSparkBolt(){
     };
     baseStats = ProjectileStats{
             .damage = 3.0f,
-            .speed = 30.0f,
+            .speed = 300.0f,
             .lifetime = 5.0f,
             .size = 8.0f,
             .tint = GREEN
@@ -455,7 +456,7 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
     };
     baseStats = ProjectileStats{
             .damage = 3.0f,
-            .speed = 30.0f,
+            .speed = 300.0f,
             .lifetime = 5.0f,
             .size = 8.0f,
             .tint = RED
