@@ -341,7 +341,7 @@ void EnvSpell::update() {
         velocity.x *= dragFactor;
         velocity.y *= dragFactor;
 
-        Vector2 delta{velocity.x * dt, velocity.y * dt};
+        Vector2 delta{velocity.x, velocity.y};
 
         Collider moved = collider;
         Physics::translate(moved, delta);
@@ -356,7 +356,7 @@ void EnvSpell::update() {
         rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
 
         float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
-        if (speedSq < 1e-3f) {
+        if (speedSq < 0.25f) {
             onExpire();
         }
     }
