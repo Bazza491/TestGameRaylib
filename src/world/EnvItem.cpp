@@ -325,12 +325,23 @@ void EnvSpell::update() {
         rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
     } else {
         Vector2 forward{cosf(rotation * DEG2RAD), sinf(rotation * DEG2RAD)};
-        if (moveSpeed == 0.0f) {
+        float currentSpeed = moveSpeed;
+        if (currentSpeed == 0.0f) {
             float velMag = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
-            moveSpeed = velMag > 0.0f ? velMag : baseStats.speed;
+            currentSpeed = velMag > 0.0f ? velMag : baseStats.speed;
         }
-        moveSpeed += G * gravityScale * dt;
-        Vector2 delta{forward.x * moveSpeed * dt, forward.y * moveSpeed * dt};
+
+        if (velocity.x == 0.0f && velocity.y == 0.0f) {
+            velocity = {forward.x * currentSpeed, forward.y * currentSpeed};
+        }
+
+        velocity.y += G * gravityScale * dt;
+
+        float dragFactor = std::max(0.0f, 1.0f - drag * dt);
+        velocity.x *= dragFactor;
+        velocity.y *= dragFactor;
+
+        Vector2 delta{velocity.x * dt, velocity.y * dt};
 
         Collider moved = collider;
         Physics::translate(moved, delta);
@@ -342,6 +353,12 @@ void EnvSpell::update() {
 
         collider = moved;
         rect = Physics::computeAABB(collider);
+        rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
+
+        float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
+        if (speedSq < 1e-3f) {
+            onExpire();
+        }
     }
 }
 
