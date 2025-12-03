@@ -248,6 +248,8 @@ void EnvItem::setDrag(float drag) {
 //endregion
 
 EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
+    blocking = false;
+    hasPhysics = false;
     this->onExpire = [this]() {
         this->dead = true;
     };
@@ -323,6 +325,10 @@ void EnvSpell::update() {
         rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
     } else {
         Vector2 forward{cosf(rotation * DEG2RAD), sinf(rotation * DEG2RAD)};
+        if (moveSpeed == 0.0f) {
+            float velMag = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
+            moveSpeed = velMag > 0.0f ? velMag : baseStats.speed;
+        }
         moveSpeed += G * gravityScale * dt;
         Vector2 delta{forward.x * moveSpeed * dt, forward.y * moveSpeed * dt};
 
