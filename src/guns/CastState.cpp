@@ -79,8 +79,15 @@ void CastState::spawnAll(const SpellTransform& origin, CastState& state) {
         float offsetDeg  = dist(gen) * proj.spread;
         float finalDeg   = origin.rotation + offsetDeg;
 
-        Vector2 vel = calcVelocity(finalDeg, proj.speed * spell->getBaseStats().speed);
+        float speed = proj.speed * spell->getBaseStats().speed;
+        Vector2 vel = calcVelocity(finalDeg, speed);
+        spell->setRotation(finalDeg);
+        spell->setMovementMode(SpellMovementMode::Arrow);
+        spell->setMoveSpeed(speed);
         spell->setVelocity(vel);
+
+        float lifetime = spell->getBaseStats().lifetime + proj.lifetime;
+        spell->setLifetimeRemaining(lifetime);
 
         // set color (if no sprite) or tint
         Color tinted = ColorTintAlphaWeighted(spell->getBaseStats().tint, proj.tint);

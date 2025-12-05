@@ -248,19 +248,24 @@ void EnvItem::setDrag(float drag) {
 //endregion
 
 EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
+    blocking = false;
+    hasPhysics = false;
     this->onExpire = [this]() {
         this->dead = true;
     };
     color = BLUE;
     baseStats = ProjectileStats{
             .damage = 0.0f,
-            .speed = 30.0f,
+            .speed = 300.0f,
             .spread = 30.0f,
             .knockback = 0.0f,
             .lifetime = 0.0f,
             .size = 0.0f,
             .tint = WHITE
     };
+    lifetimeRemaining = baseStats.lifetime;
+    moveSpeed = baseStats.speed;
+    drag = 2.0f;
 }
 
 EnvSpell::~EnvSpell() = default;
@@ -269,18 +274,107 @@ void EnvSpell::setCastState(CastState&& state) {
     castState = std::make_unique<CastState>(std::move(state));
 }
 
+void EnvSpell::setRotation(float rotationDegrees) {
+    rotation = rotationDegrees;
+}
+
+void EnvSpell::setMovementMode(SpellMovementMode mode) {
+    movementMode = mode;
+}
+
+void EnvSpell::setMoveSpeed(float speed) {
+    moveSpeed = speed;
+}
+
+void EnvSpell::setGravityScale(float scale) {
+    gravityScale = scale;
+}
+
+void EnvSpell::setLifetimeRemaining(float lifetimeSeconds) {
+    lifetimeRemaining = lifetimeSeconds;
+}
+
 void EnvSpell::update() {
-    rect.x += velocity.x;
-    rect.y += velocity.y;
-    velocity.x *= AIR_FRICTION_F;
-    velocity.y *= AIR_FRICTION_F;
-    float afc = AIR_FRICTION_C;
-    if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) onExpire();
+    float dt = GetFrameTime();
+
+    lifetimeRemaining -= dt;
+    if (lifetimeRemaining <= 0.0f) {
+        std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to lifetime.\n";
+        onExpire();
+        return;
+    }
+
+    World &world = World::getInstance();
+    auto hitsBlocking = [&](const Collider &target) {
+        for (const auto &obstacle : world.getStaticColliders()) {
+            if (Physics::overlaps(target, obstacle)) return true;
+        }
+        for (const auto &item : world.getItems()) {
+            if (item.get() == this) continue;
+            if (!item->isBlocking()) continue;
+            if (Physics::overlaps(target, item->getCollider())) return true;
+        }
+        return false;
+    };
+
+    if (movementMode == SpellMovementMode::Physics) {
+        hasPhysics = true;
+        EnvItem::update();
+        if (hitsBlocking(collider)) {
+            std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to hitting blocking world item.\n";
+            onExpire();
+            return;
+        }
+        rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
+    } else {
+        Vector2 forward{cosf(rotation * DEG2RAD), sinf(rotation * DEG2RAD)};
+        float currentSpeed = moveSpeed;
+        if (currentSpeed == 0.0f) {
+            float velMag = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
+            currentSpeed = velMag > 0.0f ? velMag : baseStats.speed;
+        }
+
+        if (velocity.x == 0.0f && velocity.y == 0.0f) {
+            velocity = {forward.x * currentSpeed, forward.y * currentSpeed};
+        }
+
+        velocity.y += G * gravityScale * dt;
+
+        float dragFactor = std::max(0.0f, 1.0f - drag * dt);
+        velocity.x *= dragFactor;
+        velocity.y *= dragFactor;
+
+        Vector2 delta{velocity.x * dt, velocity.y * dt};
+
+        Collider moved = collider;
+        Physics::translate(moved, delta);
+
+        if (hitsBlocking(moved)) {
+            std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to hitting blocking world item (next frame).\n";
+            onExpire();
+            return;
+        }
+
+        collider = moved;
+        rect = Physics::computeAABB(collider);
+        rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
+
+        float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
+        if (speedSq < 100.0f) {
+            std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to low speed.\n";
+            onExpire();
+        }
+    }
 }
 
 json EnvSpell::toJson() const {
     json j = EnvItem::toJson();
     j["type"] = "EnvSpell";
+    j["rotation"] = rotation;
+    j["lifetimeRemaining"] = lifetimeRemaining;
+    j["movementMode"] = movementMode == SpellMovementMode::Physics ? "physics" : "arrow";
+    j["moveSpeed"] = moveSpeed;
+    j["gravityScale"] = gravityScale;
     return j;
 }
 
@@ -292,26 +386,39 @@ ProjectileStats EnvSpell::getBaseStats() const {
     return baseStats;
 }
 
+float EnvSpell::getLifetimeRemaining() const {
+    return lifetimeRemaining;
+}
+
+float EnvSpell::getGravityScale() const {
+    return gravityScale;
+}
+
+float EnvSpell::getMoveSpeed() const {
+    return moveSpeed;
+}
+
+SpellMovementMode EnvSpell::getMovementMode() const {
+    return movementMode;
+}
+
 EnvSparkBolt::EnvSparkBolt(){
     this->onExpire = [this]() {
         this->dead = true;
     };
     baseStats = ProjectileStats{
             .damage = 3.0f,
-            .speed = 30.0f,
+            .speed = 1000.0f,
             .lifetime = 5.0f,
             .size = 8.0f,
             .tint = GREEN
     };
+    lifetimeRemaining = baseStats.lifetime;
+    moveSpeed = baseStats.speed;
 }
 
 void EnvSparkBolt::update() {
-    rect.x += velocity.x;
-    rect.y += velocity.y;
-    velocity.x *= AIR_FRICTION_F;
-    velocity.y *= AIR_FRICTION_F;
-    float afc = AIR_FRICTION_C;
-    if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) onExpire();
+    EnvSpell::update();
 }
 
 json EnvSparkBolt::toJson() const {
@@ -337,7 +444,10 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
     this->onExpire = [this]() {
         if (this->castState) {
 
-            float rot = atan2f(this->velocity.y, this->velocity.x) * RAD2DEG; // Calculate which way the spell is currently travelling
+            float rot = this->rotation;
+            if (this->velocity.x != 0.0f || this->velocity.y != 0.0f) {
+                rot = atan2f(this->velocity.y, this->velocity.x) * RAD2DEG;
+            }
             // TODO: Payload should cast in opposite direction if spell has hit wall
 
             // Pass the transform and the CastState metadata
@@ -350,20 +460,17 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
     };
     baseStats = ProjectileStats{
             .damage = 3.0f,
-            .speed = 30.0f,
+            .speed = 1000.0f,
             .lifetime = 5.0f,
             .size = 8.0f,
             .tint = RED
     };
+    lifetimeRemaining = baseStats.lifetime;
+    moveSpeed = baseStats.speed;
 }
 
 void EnvSparkBoltTrigger::update() {
-    rect.x += velocity.x;
-    rect.y += velocity.y;
-    velocity.x *= AIR_FRICTION_F;
-    velocity.y *= AIR_FRICTION_F;
-    float afc = AIR_FRICTION_C;
-    if ((fabsf(velocity.x) < afc) && fabsf(velocity.y) < afc) onExpire();
+    EnvSpell::update();
 }
 
 json EnvSparkBoltTrigger::toJson() const {
