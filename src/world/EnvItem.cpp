@@ -265,7 +265,7 @@ EnvSpell::EnvSpell() : EnvItem(), castState(std::make_unique<CastState>()) {
     };
     lifetimeRemaining = baseStats.lifetime;
     moveSpeed = baseStats.speed;
-    drag = 1.0f;
+    drag = 2.0f;
 }
 
 EnvSpell::~EnvSpell() = default;
@@ -299,6 +299,7 @@ void EnvSpell::update() {
 
     lifetimeRemaining -= dt;
     if (lifetimeRemaining <= 0.0f) {
+        std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to lifetime.\n";
         onExpire();
         return;
     }
@@ -320,6 +321,7 @@ void EnvSpell::update() {
         hasPhysics = true;
         EnvItem::update();
         if (hitsBlocking(collider)) {
+            std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to hitting blocking world item.\n";
             onExpire();
             return;
         }
@@ -348,6 +350,7 @@ void EnvSpell::update() {
         Physics::translate(moved, delta);
 
         if (hitsBlocking(moved)) {
+            std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to hitting blocking world item (next frame).\n";
             onExpire();
             return;
         }
@@ -357,7 +360,8 @@ void EnvSpell::update() {
         rotation = atan2f(velocity.y, velocity.x) * RAD2DEG;
 
         float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
-        if (speedSq < 0.25f) {
+        if (speedSq < 100.0f) {
+            std::cout << "Spell at [" << rect.x << "," << rect.y << "] expired due to low speed.\n";
             onExpire();
         }
     }
@@ -404,7 +408,7 @@ EnvSparkBolt::EnvSparkBolt(){
     };
     baseStats = ProjectileStats{
             .damage = 3.0f,
-            .speed = 300.0f,
+            .speed = 1000.0f,
             .lifetime = 5.0f,
             .size = 8.0f,
             .tint = GREEN
@@ -456,7 +460,7 @@ EnvSparkBoltTrigger::EnvSparkBoltTrigger() {
     };
     baseStats = ProjectileStats{
             .damage = 3.0f,
-            .speed = 300.0f,
+            .speed = 1000.0f,
             .lifetime = 5.0f,
             .size = 8.0f,
             .tint = RED
