@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib.h"
+#include "guns/RaylikeTypes.h"
 
 // Everything needed while walking the spell chain
 // (used/modified inside Spell::cast)

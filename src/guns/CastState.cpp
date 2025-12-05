@@ -1,14 +1,15 @@
 #include "guns/CastState.h"
-#include "world/World.h"
-#include "world/EnvItem.h"
-#include "guns/SpellTransform.h"
-#include "guns/Spell.h"
 
+#include "guns/EnvSpells.h"
+#include "guns/SpellTransform.h"
+
+#include <cmath>
 #include <random>
 #include <iostream>
-#include <raylib.h>
 
-void CastState::addSpell(std::unique_ptr<EnvSpell> spell) {
+CastState::~CastState() = default;
+
+void CastState::addSpell(std::unique_ptr<guns::EnvSpell> spell) {
     if (spell) {
         envSpells.push_back(std::move(spell));
     } else {
@@ -86,9 +87,19 @@ void CastState::spawnAll(const SpellTransform& origin, CastState& state) {
         Color tinted = ColorTintAlphaWeighted(spell->getBaseStats().tint, proj.tint);
         spell->setColor(tinted);
 
-        World::getInstance().addItem(std::move(spell));
+        if (spawnCallback) {
+            spawnCallback(std::move(spell));
+        } else {
+            spawnedSpells.push_back(std::move(spell));
+        }
     }
 //    envSpells.clear();
+}
+
+std::vector<std::unique_ptr<guns::EnvSpell>> CastState::takeSpawnedSpells() {
+    auto out = std::move(spawnedSpells);
+    spawnedSpells.clear();
+    return out;
 }
 
 void CastState::applyModifiers(const CastContext& deltaCtx,

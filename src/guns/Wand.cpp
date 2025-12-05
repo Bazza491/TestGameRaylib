@@ -1,5 +1,4 @@
 #include <iostream>
-#include "raylib.h"
 #include "guns/SpellStorage.h"
 #include "guns/Wand.h"
 #include "guns/SpellTransform.h"

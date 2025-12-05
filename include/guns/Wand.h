@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SpellStorage.h"
+#include "guns/RaylikeTypes.h"
 #include <string>
 
 class SpellTransform;
