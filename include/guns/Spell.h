@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib.h"
+#include "guns/RaylikeTypes.h"
 
 #include <memory>
 #include <vector>

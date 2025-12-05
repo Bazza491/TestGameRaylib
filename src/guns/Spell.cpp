@@ -1,11 +1,10 @@
-#include "raylib.h"
-
 #include <string>
-#include "world/EnvItem.h"
-#include "guns/Spell.h"
+
 #include "guns/CastState.h"
-#include "guns/SpellTransform.h"
 #include "guns/CastTypes.h"
+#include "guns/EnvSpells.h"
+#include "guns/Spell.h"
+#include "guns/SpellTransform.h"
 
 #include <random>
 #include <iostream>
@@ -63,7 +62,7 @@ void SparkBolt::cast(const std::vector<std::unique_ptr<Spell>>& deck,
     cState.applyModifiers(castMods, projMods);
 
     // create env spell
-    auto env = std::make_unique<EnvSparkBolt>();
+    auto env = std::make_unique<guns::EnvSparkBolt>();
 
 
     cState.addSpell(std::move(env));
@@ -131,7 +130,7 @@ void SparkBoltTrigger::cast(const std::vector<std::unique_ptr<Spell>>& deck,
     cState.applyModifiers(castMods, projMods);
 
     // 2. Make an EnvSparkBoltTrigger that stores innerState
-    auto triggerEnv = std::make_unique<EnvSparkBoltTrigger>();
+    auto triggerEnv = std::make_unique<guns::EnvSparkBoltTrigger>();
     triggerEnv->setCastState(std::move(innerState));
 
     cState.addSpell(std::move(triggerEnv));
